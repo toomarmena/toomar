@@ -8,7 +8,10 @@ import { getSeriesStats } from "@/lib/queries";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { SeriesRow } from "@/lib/types";
 
-export const metadata = { title: "أرقامي" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.studio.stats.title };
+}
 
 function pct(part: number, whole: number, lang: "ar" | "en") {
   if (!whole) return "—";

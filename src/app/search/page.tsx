@@ -2,7 +2,10 @@ import { CoverGrid } from "@/components/ui/cover-card";
 import { getDict } from "@/lib/lang-server";
 import { searchSeries } from "@/lib/queries";
 
-export const metadata = { title: "بحث" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.search.title };
+}
 
 export default async function SearchPage({ searchParams }: PageProps<"/search">) {
   const { q } = await searchParams;

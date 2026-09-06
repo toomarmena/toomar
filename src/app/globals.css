@@ -30,6 +30,23 @@ html {
   color-scheme: light;
   -webkit-text-size-adjust: 100%;
 }
+/* Dark: the same quiet system on a near-black ground. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-paper: #121212;
+  --color-paper-2: #181818;
+  --color-ink: #f2f2f2;
+  --color-ink-2: #b8b8be;
+  --color-muted: #8a8a92;
+  --color-hair: #2a2a2e;
+  --color-placeholder: #26262a;
+  --color-blue: #6b8fff;
+  --color-violet: #a394f2;
+  --color-surface: #181818;
+}
+html[data-theme="dark"] .cover-hover:hover {
+  opacity: 0.8;
+}
 
 *,
 *::before,

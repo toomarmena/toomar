@@ -8,7 +8,10 @@ import { mediaUrl } from "@/lib/media";
 import { getProfile } from "@/lib/supabase/server";
 import { setUiLang, signOut } from "./actions";
 
-export const metadata = { title: "حسابي" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.account.title };
+}
 
 export default async function AccountPage({ searchParams }: PageProps<"/account">) {
   const sp = await searchParams;
@@ -64,7 +67,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
           <li key={l.href}>
             <Link href={l.href} className="flex items-center justify-between py-3.5 hover:text-blue transition-colors">
               <span>{l.label}</span>
-              <span aria-hidden>←</span>
+              <span aria-hidden>{d.common.fwd}</span>
             </Link>
           </li>
         ))}

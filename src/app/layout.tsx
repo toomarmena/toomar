@@ -3,7 +3,7 @@ import { El_Messiri, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/shell";
 import { LangProvider } from "@/components/lang-provider";
-import { getLang } from "@/lib/lang-server";
+import { getDict, getLang, getTheme } from "@/lib/lang-server";
 import { getProfile } from "@/lib/supabase/server";
 
 const display = El_Messiri({
@@ -20,10 +20,11 @@ const body = IBM_Plex_Sans_Arabic({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: { default: "طومار", template: "%s · طومار" },
-  description: "منصة عربية للقصص المصوّرة والروايات، تصدر في حلقات أسبوعية.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { lang, d } = await getDict();
+  const name = lang === "ar" ? "طومار" : "Toomar";
+  return { title: { default: name, template: `%s · ${name}` }, description: d.meta.siteDescription };
+}
 
 export const viewport: Viewport = {
   themeColor: "#ffffff",
@@ -33,13 +34,12 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const lang = await getLang();
-  const profile = await getProfile().catch(() => null);
+  const [lang, theme, profile] = await Promise.all([getLang(), getTheme(), getProfile().catch(() => null)]);
   return (
-    <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} className={`${display.variable} ${body.variable} h-full antialiased`}>
+    <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} data-theme={theme} className={`${display.variable} ${body.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <LangProvider lang={lang}>
-          <Shell signedIn={!!profile} role={profile?.role ?? null}>
+          <Shell signedIn={!!profile} role={profile?.role ?? null} theme={theme}>
             {children}
           </Shell>
         </LangProvider>

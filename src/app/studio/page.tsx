@@ -6,7 +6,10 @@ import { mediaUrl } from "@/lib/media";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { SeriesRow } from "@/lib/types";
 
-export const metadata = { title: "لوحة المبدع" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.studio.title };
+}
 
 export default async function StudioPage() {
   const { d } = await getDict();

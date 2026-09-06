@@ -13,7 +13,10 @@ import { createClient, getProfile } from "@/lib/supabase/server";
 import type { SeriesRow } from "@/lib/types";
 import { approveSeries, hideSeries, rejectSeries, setVerified } from "./actions";
 
-export const metadata = { title: "لوحة التحرير" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.admin.title };
+}
 
 type Row = SeriesRow & { profiles: { display_name: string; is_verified: boolean } | null; episodes: { count: number }[] };
 type Person = { id: string; display_name: string; role: string; is_verified: boolean; created_at: string };

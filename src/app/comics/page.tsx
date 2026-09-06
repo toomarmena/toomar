@@ -1,6 +1,10 @@
+import { getDict } from "@/lib/lang-server";
 import { Listing } from "@/components/listing";
 
-export const metadata = { title: "قصص مصوّرة" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.nav.comics };
+}
 
 export default async function ComicsPage({ searchParams }: PageProps<"/comics">) {
   const { genre } = await searchParams;

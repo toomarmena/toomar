@@ -6,7 +6,10 @@ import { mediaUrl } from "@/lib/media";
 import { cleanSocialLinks } from "@/lib/queries";
 import { getProfile } from "@/lib/supabase/server";
 
-export const metadata = { title: "ملفي العام" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.studio.profile.title };
+}
 
 export default async function StudioProfilePage() {
   const profile = await getProfile().catch(() => null);

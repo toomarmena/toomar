@@ -9,7 +9,10 @@ import { toSummary } from "@/lib/queries";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { SeriesCardRow } from "@/lib/types";
 
-export const metadata = { title: "مكتبتي" };
+export async function generateMetadata() {
+  const { d } = await getDict();
+  return { title: d.library.title };
+}
 
 export default async function LibraryPage() {
   const { lang, d } = await getDict();
@@ -53,7 +56,7 @@ export default async function LibraryPage() {
                     {s.title}
                   </Link>
                   <Link href={`${seriesHref(s)}/${p.number}?lang=${p.lang}`} className="t-link t-caption text-ink shrink-0">
-                    {EPISODE_WORD[s.kind][lang]} {formatNumber(p.number, lang)} ←
+                    {EPISODE_WORD[s.kind][lang]} {formatNumber(p.number, lang)} {d.common.fwd}
                   </Link>
                 </li>
               );

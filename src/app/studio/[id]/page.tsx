@@ -35,7 +35,7 @@ export default async function StudioSeriesPage({ params }: PageProps<"/studio/[i
   return (
     <div className="flex flex-col gap-10">
       <Link href="/studio" className="t-link t-caption text-ink self-start">
-        → {d.studio.nav.series}
+        {d.common.back} {d.studio.nav.series}
       </Link>
 
       <div className="flex flex-col md:flex-row md:items-start gap-6 md:gap-10">

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { isLang, LANG_COOKIE } from "@/lib/i18n";
+import { THEME_COOKIE } from "@/lib/lang-server";
 
 export type AuthState = { error?: "invalid" | "weak" | "exists" | "generic" | "auth" } | null;
 
@@ -70,6 +71,11 @@ export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
   redirect("/");
+}
+
+export async function setTheme(theme: "light" | "dark") {
+  const jar = await cookies();
+  jar.set(THEME_COOKIE, theme, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
 }
 
 export async function setUiLang(form: FormData) {

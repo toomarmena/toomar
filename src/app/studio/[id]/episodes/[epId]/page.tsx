@@ -37,7 +37,7 @@ export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[
   return (
     <div className="flex flex-col gap-8">
       <Link href={`/studio/${series.id}`} className="t-link t-caption text-ink self-start">
-        → {series.title_ar}
+        {d.common.back} {series.title_ar}
       </Link>
 
       <div className="flex items-start justify-between gap-4 flex-wrap">

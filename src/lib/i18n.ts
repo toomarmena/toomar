@@ -222,7 +222,8 @@ export const ar = {
     notAdmin: "هذه الصفحة للمحرّر فقط.",
     unpublishSeries: "إخفاء السلسلة",
   },
-  common: { loading: "لحظة…", error: "حدث خطأ.", yes: "نعم", no: "لا", cancel: "إلغاء", close: "إغلاق", none: "لا شيء" },
+  common: { loading: "لحظة…", error: "حدث خطأ.", yes: "نعم", no: "لا", cancel: "إلغاء", close: "إغلاق", none: "لا شيء", fwd: "←", back: "→", dark: "الوضع الداكن", light: "الوضع الفاتح", language: "اللغة" },
+  meta: { siteDescription: "منصة عربية للقصص المصوّرة والروايات، تصدر في حلقات أسبوعية.", newSeries: "سلسلة جديدة", styleguide: "دليل الأسلوب" },
 };
 
 export type Dict = typeof ar;
@@ -233,9 +234,9 @@ export const en: Dict = {
   nav: { home: "Home", comics: "Web Comics", novels: "Novels", library: "Library", account: "Account", search: "Search", publish: "Publish", signIn: "Sign in", searchPlaceholder: "Search stories or artists", admin: "Editor's desk", studio: "Creator studio", publishShort: "Publish", enter: "Sign in" },
   home: {
     eyebrow: "An Arabic platform for web comics and novels",
-    h1a: "لدينا",
-    h1b: "ما نحكيه.",
-    lede: "أعمال أصلية من كتّاب وفنانين عرب.",
+    h1a: "We have",
+    h1b: "stories to tell.",
+    lede: "Original work by Arab writers and artists.",
     start: "Start reading",
     haveStory: "Have a story? Publish it",
     picks: "Picks",
@@ -445,7 +446,8 @@ export const en: Dict = {
     notAdmin: "This page is for the editor only.",
     unpublishSeries: "Hide series",
   },
-  common: { loading: "One moment…", error: "Something went wrong.", yes: "Yes", no: "No", cancel: "Cancel", close: "Close", none: "None" },
+  common: { loading: "One moment…", error: "Something went wrong.", yes: "Yes", no: "No", cancel: "Cancel", close: "Close", none: "None", fwd: "→", back: "←", dark: "Dark mode", light: "Light mode", language: "Language" },
+  meta: { siteDescription: "An Arabic platform for web comics and novels, published in weekly episodes.", newSeries: "New series", styleguide: "Styleguide" },
 };
 
 export const DICT: Record<Lang, Dict> = { ar, en };
