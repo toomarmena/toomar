@@ -4,7 +4,7 @@ import type { Dict } from "@/lib/i18n";
 /** Text only. The headline is the picture; the covers below do the rest. */
 export function Hero({ d }: { d: Dict }) {
   return (
-    <section className="wrap pt-14 pb-10 md:pt-[120px] md:pb-20">
+    <section className="wrap pt-10 md:pt-16">
       <div className="flex flex-col gap-5 md:gap-7 max-w-[720px]">
         <span className="t-label">{d.home.eyebrow}</span>
         <h1 className="t-h1 text-balance">
