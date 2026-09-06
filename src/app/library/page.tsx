@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Cover } from "@/components/cover";
 import { VerifiedMark } from "@/components/icons";
-import { seriesHref } from "@/components/series-card";
+import { seriesHref } from "@/lib/links";
 import { EPISODE_WORD, formatNumber, weekdayLabel } from "@/lib/constants";
 import { fill } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";

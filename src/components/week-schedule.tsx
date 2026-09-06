@@ -8,7 +8,7 @@ import type { SeriesSummary } from "@/lib/types";
 import { Cover } from "./cover";
 import { VerifiedMark } from "./icons";
 import { useLang, useT } from "./lang-provider";
-import { seriesHref } from "./series-card";
+import { seriesHref } from "@/lib/links";
 
 /** Weekday chips; tap a day to see what publishes on it. */
 export function WeekSchedule({ items, today }: { items: SeriesSummary[]; today: number }) {

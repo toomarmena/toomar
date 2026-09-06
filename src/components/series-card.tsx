@@ -6,10 +6,7 @@ import { VerifiedMark } from "./icons";
 import { useLang } from "./lang-provider";
 import { genreLabel } from "@/lib/constants";
 import type { SeriesSummary } from "@/lib/types";
-
-export function seriesHref(s: Pick<SeriesSummary, "kind" | "slug">) {
-  return `/${s.kind === "comic" ? "comics" : "novels"}/${s.slug}`;
-}
+import { seriesHref } from "@/lib/links";
 
 export function SeriesCard({ series, priority = false }: { series: SeriesSummary; priority?: boolean }) {
   const lang = useLang();
