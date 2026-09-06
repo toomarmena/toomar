@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseUrl } from "@/lib/supabase/env";
 
 /** Reports whether the server can reach its services. Never returns key values. */
 export async function GET() {
   const report: Record<string, string> = {
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? `set (${process.env.NEXT_PUBLIC_SUPABASE_URL.length} chars)` : "missing",
+    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL ? `set (${process.env.NEXT_PUBLIC_SUPABASE_URL.length} chars, using ${supabaseUrl().length})` : "missing",
     supabaseAnonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? `set (${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.length} chars, starts ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY.slice(0, 14)})` : "missing",
     serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? `set (${process.env.SUPABASE_SERVICE_ROLE_KEY.length} chars)` : "missing",
     r2AccountId: process.env.R2_ACCOUNT_ID ? "set" : "missing",

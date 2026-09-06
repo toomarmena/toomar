@@ -25,7 +25,7 @@ for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
   if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^["']|["']$/g, "");
 }
 const need = (k) => process.env[k] || fail(`${k} is empty in .env.local`);
-const SUPABASE_URL = need("NEXT_PUBLIC_SUPABASE_URL");
+const SUPABASE_URL = need("NEXT_PUBLIC_SUPABASE_URL").replace(/\/(rest|auth|storage)\/v1\/?$/i, "").replace(/\/+$/, "");
 const SERVICE_KEY = need("SUPABASE_SERVICE_ROLE_KEY");
 const R2 = {
   account: need("R2_ACCOUNT_ID"),
