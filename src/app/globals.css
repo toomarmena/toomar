@@ -181,10 +181,15 @@ body {
 }
 
 /* ---- the book: on pointer devices a cover turns in 3D and shows its pages ---- */
+/* The book pivots on its pages edge, so that edge stays put and nothing leans into the neighbour. */
 .book {
   position: relative;
   transform-style: preserve-3d;
+  transform-origin: 100% 50%;
   transition: transform 380ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+[dir="rtl"] .book {
+  transform-origin: 0% 50%;
 }
 .book-host {
   perspective: 1200px;
@@ -214,10 +219,10 @@ html[data-theme="dark"] .book-pages {
 }
 @media (hover: hover) and (min-width: 768px) {
   .book-host:hover .book {
-    transform: rotateY(-28deg) scale(1.04);
+    transform: rotateY(-28deg);
   }
   [dir="rtl"] .book-host:hover .book {
-    transform: rotateY(28deg) scale(1.04);
+    transform: rotateY(28deg);
   }
 }
 
