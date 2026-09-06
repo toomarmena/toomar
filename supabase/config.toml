@@ -1,0 +1,5 @@
+# Minimal config so `supabase link` and `supabase db push` work in CI.
+project_id = "toomar"
+
+[db]
+major_version = 17
