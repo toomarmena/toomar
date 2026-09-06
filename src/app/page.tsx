@@ -52,19 +52,19 @@ export default async function HomePage() {
         <WeekSchedule items={running} today={today} />
       </section>
 
-      <section className="wrap section flex flex-col gap-6 md:gap-8">
+      <section className="wrap section section-end flex flex-col gap-6 md:gap-8">
         <SectionHeader title={d.nav.comics} note={d.section.all} href="/comics" />
         {comics.length ? <Grid items={comics} /> : <p className="t-caption py-10 text-center">{d.home.empty}</p>}
       </section>
 
       <section className="bg-paper-2">
-        <div className="wrap section flex flex-col gap-6 md:gap-8">
+        <div className="wrap section section-end flex flex-col gap-6 md:gap-8">
           <SectionHeader title={d.nav.novels} note={d.section.all} href="/novels" />
           {novels.length ? <Grid items={novels} /> : <p className="t-caption py-10 text-center">{d.home.empty}</p>}
         </div>
       </section>
 
-      <section className="wrap section flex flex-col items-center gap-3 text-center">
+      <section className="wrap section section-end flex flex-col items-center gap-3 text-center">
         <span className="font-display text-[40px] leading-none">{d.home.toBeContinued}</span>
         <span className="text-[15px] text-ink-2">{d.home.closingLine}</span>
         <Button variant="link" href="/studio">

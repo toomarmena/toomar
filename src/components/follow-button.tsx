@@ -4,21 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toggleFollow } from "@/app/reader-actions";
 import { useT } from "./lang-provider";
-import { IconCheck } from "./icons";
+import { Button } from "./ui/button";
 
-export function FollowButton({
-  seriesId,
-  initial,
-  signedIn,
-  next,
-  size = "md",
-}: {
-  seriesId: string;
-  initial: boolean;
-  signedIn: boolean;
-  next: string;
-  size?: "md" | "lg";
-}) {
+/** «تابع» as the secondary button; «تتابعها» once following. */
+export function FollowButton({ seriesId, initial, signedIn, next, variant = "secondary", block = false }: { seriesId: string; initial: boolean; signedIn: boolean; next: string; variant?: "primary" | "secondary"; block?: boolean }) {
   const [following, setFollowing] = useState(initial);
   const [pending, start] = useTransition();
   const router = useRouter();
@@ -38,19 +27,9 @@ export function FollowButton({
     });
   };
 
-  const pad = size === "lg" ? "h-12 px-6 text-[15px]" : "h-10 px-5 text-sm";
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={pending}
-      aria-pressed={following}
-      className={`inline-flex items-center justify-center gap-2 font-bold transition-colors ${pad} ${
-        following ? "bg-white text-ink border-[1.5px] border-ink" : "bg-blue text-white hover:bg-blue-deep"
-      } disabled:opacity-70`}
-    >
-      {following && <IconCheck width={16} height={16} strokeWidth={3} />}
+    <Button variant={following ? "secondary" : variant} block={block} onClick={onClick} disabled={pending} aria-pressed={following} className={following ? "border-ink" : ""}>
       {following ? d.series.following : d.series.follow}
-    </button>
+    </Button>
   );
 }

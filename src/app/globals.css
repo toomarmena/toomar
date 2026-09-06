@@ -126,12 +126,19 @@ body {
     padding-inline: 40px;
   }
 }
+/* Sections carry their space above them only; the page end and tinted grounds add the bottom. */
 .section {
-  padding-block: 56px;
+  padding-top: 56px;
+}
+.section-end {
+  padding-bottom: 56px;
 }
 @media (min-width: 768px) {
   .section {
-    padding-block: 96px;
+    padding-top: 96px;
+  }
+  .section-end {
+    padding-bottom: 96px;
   }
 }
 

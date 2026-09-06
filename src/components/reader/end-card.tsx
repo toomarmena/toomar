@@ -92,7 +92,7 @@ export function EndCard({
             {d.reader.readNext}
           </Link>
         ) : null}
-        <FollowButton seriesId={seriesId} initial={following} signedIn={signedIn} next={seriesHref} size="lg" />
+        <FollowButton seriesId={seriesId} initial={following} signedIn={signedIn} next={seriesHref} variant="primary" block />
         <Link href={seriesHref} className="flex items-center justify-center h-12 border-[1.5px] border-hair text-ink font-semibold text-[15px] hover:border-ink">
           {d.reader.backToSeries}
         </Link>

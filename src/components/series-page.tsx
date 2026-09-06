@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Avatar } from "./avatar";
 import { Cover } from "./cover";
 import { FollowButton } from "./follow-button";
 import { VerifiedMark } from "./icons";
-import { ShareRow } from "./share-row";
+import { ShareLink } from "./share-link";
+import { Button } from "./ui/button";
+import { SegmentedControl } from "./ui/segmented";
 import { AGE_RATING, EPISODE_WORD, RUN_STATUS, formatNumber, genreLabel, weekdayLabel, type SeriesKind } from "@/lib/constants";
-import { creatorHref } from "@/lib/links";
 import { fill, isLang, type Lang } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
+import { creatorHref } from "@/lib/links";
 import { getProgress, getSeriesBySlug, isFollowing, listEpisodes } from "@/lib/queries";
 import { getUser } from "@/lib/supabase/server";
 
@@ -16,6 +17,7 @@ function formatDate(iso: string, lang: Lang) {
   return new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "long", timeZone: "Africa/Cairo" }).format(new Date(iso));
 }
 
+/** Gallery series page: the cover centered on a quiet ground, everything under it. */
 export async function SeriesPage({ kind, slug, langParam }: { kind: SeriesKind; slug: string; langParam?: string }) {
   const { lang: ui, d } = await getDict();
   const series = await getSeriesBySlug(slug, ui);
@@ -25,6 +27,7 @@ export async function SeriesPage({ kind, slug, langParam }: { kind: SeriesKind; 
   const wanted = isLang(langParam) ? langParam : ui;
   const contentLang: Lang = series.languages.includes(wanted) ? wanted : series.languages[0];
   const base = `/${kind === "comic" ? "comics" : "novels"}/${series.slug}`;
+  const dir = contentLang === "ar" ? "rtl" : "ltr";
 
   const user = await getUser().catch(() => null);
   const [episodes, following, progress] = await Promise.all([
@@ -39,102 +42,103 @@ export async function SeriesPage({ kind, slug, langParam }: { kind: SeriesKind; 
   const latest = episodes[0];
   const continueTo = progress && episodes.some((e) => e.number === progress.number) ? progress.number : null;
   const firstNumber = episodes.length ? episodes[episodes.length - 1].number : null;
+  const schedule = series.runStatus === "ongoing" ? fill(d.series.every, { day: weekdayLabel(series.publishDay, ui) }) : RUN_STATUS.find((r) => r.key === series.runStatus)?.[ui];
+  const age = series.ageRating !== "all" ? AGE_RATING.find((r) => r.key === series.ageRating)?.short[ui] : null;
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-12 pt-4 md:pt-12 flex flex-col gap-8 md:gap-12">
-      <section className="grid grid-cols-[120px_1fr] md:grid-cols-[260px_1fr] gap-5 md:gap-10 items-start">
-        <div className="md:sticky md:top-6">
-          <Cover src={series.coverUrl} title={title} tint={series.tint} priority />
-        </div>
-        <div className="flex flex-col gap-3 md:gap-5 min-w-0">
-          <div className="flex items-center justify-between gap-3">
-            <span className={`text-[11px] md:text-xs font-semibold tracking-[0.06em] ${kind === "comic" ? "text-blue" : "text-violet"}`}>
-              {genreLabel(series.genre, ui)} · {kind === "comic" ? d.nav.comics : d.nav.novels}
-            </span>
-            {series.languages.length > 1 && (
-              <div className="flex border border-hair text-xs font-semibold" role="group" aria-label={d.series.language}>
-                {series.languages.map((l) => (
-                  <Link key={l} href={`${base}?lang=${l}`} className={`px-3 py-1.5 ${l === contentLang ? "bg-ink text-white" : "text-ink-2 hover:text-ink"}`} aria-current={l === contentLang ? "true" : undefined}>
-                    {l === "ar" ? d.series.arabic : d.series.english}
-                  </Link>
-                ))}
-              </div>
-            )}
+    <div className="flex flex-col">
+      <header className="bg-paper-2 border-b border-hair">
+        <div className="wrap flex flex-col items-center text-center py-10 md:py-14 gap-6 md:gap-7">
+          <div className="w-[60vw] max-w-[280px] md:w-[320px] md:max-w-[320px]">
+            <Cover src={series.coverUrl} priority />
           </div>
-          <h1 className="font-display text-[30px] md:text-[48px] leading-tight text-balance" lang={contentLang} dir={contentLang === "ar" ? "rtl" : "ltr"}>
-            {title}
-          </h1>
-          <Link href={creatorHref(series.creator)} className="flex items-center gap-2 text-sm text-ink-2 self-start group">
-            <Avatar src={series.creator.avatarUrl} name={series.creator.name} size={28} />
-            <span className="text-muted">{d.series.by}</span>
-            <span className="font-semibold text-ink group-hover:text-blue">{series.creator.name}</span>
-            {series.creator.verified && <VerifiedMark />}
-          </Link>
-          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-2">
-            <span>
-              <span className="text-muted">{d.series.publishDay}:</span>{" "}
-              {series.runStatus === "ongoing" ? fill(d.series.every, { day: weekdayLabel(series.publishDay, ui) }) : RUN_STATUS.find((r) => r.key === series.runStatus)?.[ui]}
+          <div className="flex flex-col items-center gap-3">
+            <span className={`t-micro ${kind === "novel" ? "text-violet" : ""}`} dir="ltr">
+              {kind === "novel" ? "novels" : "web comics"}
             </span>
-            <span className="inline-flex items-center px-1.5 py-0.5 border border-hair text-[11px] font-semibold text-ink-2" title={AGE_RATING.find((r) => r.key === series.ageRating)?.[ui]}>
-              {AGE_RATING.find((r) => r.key === series.ageRating)?.short[ui]}
-            </span>
-          </p>
-          <div className="hidden md:block">
-            {description && (
-              <p className="text-base leading-relaxed text-ink-2 whitespace-pre-line" lang={contentLang} dir={contentLang === "ar" ? "rtl" : "ltr"}>
-                {description}
-              </p>
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-3 pt-1">
-            {latest && (
-              <Link href={`${base}/${continueTo ?? firstNumber}?lang=${contentLang}`} className="inline-flex items-center h-12 px-6 bg-ink text-white font-bold text-[15px]">
-                {continueTo ? `${d.series.continueReading} · ${word} ${formatNumber(continueTo, ui)}` : d.series.startReading}
+            <h1 className="font-display text-[28px] md:text-[40px] leading-[1.2] text-balance max-w-[720px]" lang={contentLang} dir={dir}>
+              {title}
+            </h1>
+            <p className="t-caption flex flex-wrap items-center justify-center gap-1">
+              <Link href={creatorHref(series.creator)} className="inline-flex items-center gap-1 hover:text-blue transition-colors">
+                {series.creator.name}
+                {series.creator.verified && <VerifiedMark size={12} />}
               </Link>
-            )}
-            <FollowButton seriesId={series.id} initial={following} signedIn={!!user} next={base} size="lg" />
+              <span aria-hidden>·</span>
+              <span>{genreLabel(series.genre, ui)}</span>
+              <span aria-hidden>·</span>
+              <span>{schedule}</span>
+              {age && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span>{age}</span>
+                </>
+              )}
+            </p>
           </div>
-          <ShareRow path={base} title={title} creator={series.creator.name} />
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+            {latest && (
+              <Button href={`${base}/${continueTo ?? firstNumber}?lang=${contentLang}`} variant="primary">
+                {continueTo ? `${d.series.continueReading} · ${word} ${formatNumber(continueTo, ui)}` : d.series.startReading}
+              </Button>
+            )}
+            <FollowButton seriesId={series.id} initial={following} signedIn={!!user} next={base} />
+            {series.languages.length > 1 && (
+              <SegmentedControl
+                size="sm"
+                label={d.series.language}
+                active={contentLang}
+                items={series.languages.map((l) => ({ key: l, label: l === "ar" ? "عربي" : "EN", href: `${base}?lang=${l}` }))}
+              />
+            )}
+          </div>
+          <ShareLink path={base} title={title} creator={series.creator.name} />
         </div>
-      </section>
+      </header>
 
-      {description && (
-        <p className="md:hidden text-[15px] leading-relaxed text-ink-2 whitespace-pre-line -mt-2" lang={contentLang} dir={contentLang === "ar" ? "rtl" : "ltr"}>
-          {description}
-        </p>
-      )}
-
-      <section className="flex flex-col gap-4">
-        <h2 className="font-display text-[28px] md:text-[34px] leading-tight">{kind === "comic" ? d.series.episodes : d.series.chapters}</h2>
-        {episodes.length === 0 ? (
-          <p className="py-10 text-center text-sm text-muted border border-dashed border-hair">{kind === "comic" ? d.series.noEpisodes : d.series.noChapters}</p>
-        ) : (
-          <ol className="divide-y divide-hair border-y border-hair">
-            {episodes.map((e) => (
-              <li key={e.id}>
-                <Link href={`${base}/${e.number}?lang=${contentLang}`} className="flex items-center gap-4 py-3.5 hover:bg-surface -mx-2 px-2">
-                  {e.thumbUrl ? (
-                    <span className="relative w-14 h-14 shrink-0 overflow-hidden bg-surface border border-hair">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={e.thumbUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover object-top" />
-                      <span className="absolute bottom-0 end-0 px-1 bg-white/90 font-display text-sm leading-tight">{formatNumber(e.number, ui)}</span>
-                    </span>
-                  ) : (
-                    <span className="font-display text-2xl w-14 h-14 flex items-center justify-center text-ink shrink-0 bg-surface border border-hair">{formatNumber(e.number, ui)}</span>
-                  )}
-                  <span className="flex flex-col gap-0.5 min-w-0 flex-1">
-                    <span className="font-semibold truncate" lang={contentLang} dir={contentLang === "ar" ? "rtl" : "ltr"}>
-                      {e.title || `${word} ${formatNumber(e.number, ui)}`}
-                    </span>
-                    {e.publishedAt && <span className="text-xs text-muted">{formatDate(e.publishedAt, ui)}</span>}
-                  </span>
-                  {progress?.number === e.number && <span className="text-[11px] font-semibold text-blue shrink-0">{d.library.lastRead}</span>}
-                </Link>
-              </li>
-            ))}
-          </ol>
+      <div className="wrap max-w-[760px] flex flex-col gap-12 md:gap-16 pt-10 md:pt-16 section-end">
+        {description && (
+          <p className="text-[15px] md:text-[16px] leading-[1.75] text-ink-2 max-w-[60ch] whitespace-pre-line" lang={contentLang} dir={dir}>
+            {description}
+          </p>
         )}
-      </section>
+
+        <section className="flex flex-col">
+          <div className="flex items-baseline justify-between gap-4 pb-4 border-b border-hair">
+            <h2 className="t-h2">{kind === "comic" ? d.series.episodes : d.series.chapters}</h2>
+            <span className="t-caption">{d.series.newestFirst}</span>
+          </div>
+          {episodes.length === 0 ? (
+            <p className="t-caption py-10 text-center">{kind === "comic" ? d.series.noEpisodes : d.series.noChapters}</p>
+          ) : (
+            <ol className="divide-y divide-hair">
+              {episodes.map((e, i) => (
+                <li key={e.id}>
+                  <Link href={`${base}/${e.number}?lang=${contentLang}`} className="group flex items-center gap-4 py-3.5">
+                    <div className="w-10 shrink-0 cover-hover">
+                      {e.thumbUrl ? (
+                        <Cover src={e.thumbUrl} />
+                      ) : (
+                        <span className="cover-2-3 flex items-center justify-center font-display text-[15px] text-ink-2">{formatNumber(e.number, ui)}</span>
+                      )}
+                    </div>
+                    <span className="flex flex-col gap-0.5 min-w-0 flex-1">
+                      <span className="text-[15px] leading-snug group-hover:text-blue transition-colors" lang={contentLang} dir={dir}>
+                        {e.title ? `${word} ${formatNumber(e.number, ui)} · ${e.title}` : `${word} ${formatNumber(e.number, ui)}`}
+                        {i === 0 && <span className="t-caption ms-2">{d.series.newLabel}</span>}
+                      </span>
+                      <span className="t-caption">
+                        {e.publishedAt && formatDate(e.publishedAt, ui)}
+                        {progress?.number === e.number && ` · ${d.library.lastRead}`}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
