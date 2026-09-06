@@ -4,7 +4,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 export type ButtonVariant = "primary" | "secondary" | "link";
 
 const VARIANT: Record<ButtonVariant, string> = {
-  primary: "h-12 px-7 bg-ink text-white font-bold hover:bg-ink-2 transition-colors",
+  primary: "h-12 px-7 bg-ink text-paper font-bold hover:bg-ink-2 transition-colors",
   secondary: "h-12 px-7 bg-paper text-ink font-medium border border-hair hover:border-ink transition-colors",
   link: "t-link font-medium",
 };

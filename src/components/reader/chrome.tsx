@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { IconBack, IconLibrary } from "../icons";
-import { useT } from "../lang-provider";
+import { IconArrowLeft, IconBack, IconLibrary } from "../icons";
+import { useLang, useT } from "../lang-provider";
 import { recordEvent, saveProgress } from "@/app/reader-actions";
 
 export function anonId() {
@@ -52,6 +52,8 @@ export function ReaderChrome({
   const lastY = useRef(0);
   const ticking = useRef(false);
   const d = useT();
+  const ui = useLang();
+  const Back = ui === "ar" ? IconBack : IconArrowLeft;
 
   useEffect(() => {
     if (!track) return;
@@ -88,7 +90,7 @@ export function ReaderChrome({
       <header className={`fixed inset-x-0 top-0 z-40 h-14 bg-paper border-b border-hair transition-transform duration-200 ${visible ? "translate-y-0" : "-translate-y-full"}`}>
         <div className="mx-auto max-w-[800px] h-full flex items-center justify-between gap-3 px-4">
           <Link href={backHref} className="flex items-center gap-3 min-w-0 text-ink" aria-label={d.reader.backToSeries}>
-            <IconBack width={22} height={22} strokeWidth={1.75} className="shrink-0" />
+            <Back width={22} height={22} strokeWidth={1.75} className="shrink-0" />
             <span className="flex flex-col min-w-0">
               <span className="font-display text-[15px] leading-tight truncate">{title}</span>
               <span className="text-[11px] text-muted truncate">{subtitle}</span>
