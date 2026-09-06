@@ -31,6 +31,7 @@ export function toSummary(r: SeriesCardRow, lang: Lang = "ar"): SeriesSummary {
     languages: r.languages,
     runStatus: r.run_status ?? "ongoing",
     ageRating: r.age_rating ?? "all",
+    description: (lang === "en" ? r.description_en || r.description_ar : r.description_ar || r.description_en) ?? null,
   };
 }
 

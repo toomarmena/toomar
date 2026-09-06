@@ -38,6 +38,8 @@ export type SeriesSummary = {
   languages: Lang[];
   runStatus: RunStatus;
   ageRating: AgeRating;
+  /** Short description in the interface language, for the hover peek. */
+  description: string | null;
 };
 
 export type SeriesDetail = SeriesSummary & {

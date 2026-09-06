@@ -180,6 +180,58 @@ body {
   }
 }
 
+/* ---- the peek: a page that opens from the cover's inner edge, desktop pointers only ---- */
+.peek-host {
+  position: relative;
+}
+.peek {
+  display: none;
+}
+@media (hover: hover) and (min-width: 768px) {
+  .peek {
+    display: flex;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    z-index: 30;
+    pointer-events: none;
+    opacity: 0;
+    background: var(--color-paper-2);
+    border: 1px solid var(--color-hair);
+    transform: perspective(1400px) rotateY(var(--peek-closed));
+    transition:
+      transform 260ms cubic-bezier(0.2, 0.7, 0.2, 1) 120ms,
+      opacity 160ms ease 120ms;
+    backface-visibility: hidden;
+  }
+  .peek-end {
+    inset-inline-start: 100%;
+    transform-origin: 0% 50%;
+    --peek-closed: 80deg;
+  }
+  .peek-start {
+    inset-inline-end: 100%;
+    transform-origin: 100% 50%;
+    --peek-closed: -80deg;
+  }
+  [dir="rtl"] .peek-end {
+    transform-origin: 100% 50%;
+    --peek-closed: -80deg;
+  }
+  [dir="rtl"] .peek-start {
+    transform-origin: 0% 50%;
+    --peek-closed: 80deg;
+  }
+  .peek-host:hover {
+    z-index: 40;
+  }
+  .peek-host:hover .peek {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(0deg);
+  }
+}
+
 /* ---- the one text link ---- */
 .t-link {
   color: var(--color-ink);
