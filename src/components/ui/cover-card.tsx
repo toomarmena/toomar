@@ -31,12 +31,10 @@ export function CoverCard({ series, priority = false, width }: { series: SeriesS
             {series.creator.verified && <VerifiedMark />}
           </span>
           {series.latestEpisode && (
-            <>
-              <span aria-hidden>·</span>
-              <span>
-                {word} {formatNumber(series.latestEpisode.number, lang)}
-              </span>
-            </>
+            <span className="hidden md:inline">
+              <span aria-hidden>· </span>
+              {word} {formatNumber(series.latestEpisode.number, lang)}
+            </span>
           )}
           <span aria-hidden>·</span>
           <span>{weekdayLabel(series.publishDay, lang)}</span>
