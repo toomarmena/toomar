@@ -67,6 +67,24 @@ export async function signInWithGoogle(form: FormData) {
   redirect(data.url);
 }
 
+export async function requestPasswordReset(form: FormData) {
+  const email = String(form.get("email") ?? "").trim();
+  if (email) {
+    const supabase = await createClient();
+    await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${await origin()}/auth/callback?next=${encodeURIComponent("/account/reset")}` });
+  }
+  redirect("/account/forgot?sent=1");
+}
+
+export async function updatePassword(form: FormData) {
+  const password = String(form.get("password") ?? "");
+  if (password.length < 6) redirect("/account/reset?error=weak");
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) redirect("/account/reset?error=weak");
+  redirect("/account");
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();

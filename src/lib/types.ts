@@ -14,6 +14,13 @@ export type CreatorProfile = Creator & {
   socialLinks: SocialLinks;
 };
 
+/** A row of the creators' directory. */
+export type CreatorCard = Creator & {
+  bio: string | null;
+  hasComics: boolean;
+  hasNovels: boolean;
+};
+
 /** What a card or list needs. Built from the `series_cards` view. */
 export type SeriesSummary = {
   id: string;

@@ -11,7 +11,7 @@ import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import type { SeriesRow } from "@/lib/types";
-import { approveSeries, hideSeries, rejectSeries, setVerified } from "./actions";
+import { approveSeries, hideSeries, rejectSeries, setVerified, transferSeries } from "./actions";
 
 export async function generateMetadata() {
   const { d } = await getDict();
@@ -23,7 +23,8 @@ type Person = { id: string; display_name: string; role: string; is_verified: boo
 
 const h2 = "t-h2 pb-4 border-b border-hair";
 
-export default async function AdminPage() {
+export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
+  const { transfer } = await searchParams;
   const profile = await getProfile().catch(() => null);
   if (!profile) redirect("/account?next=/admin");
   const { d } = await getDict();
@@ -45,6 +46,7 @@ export default async function AdminPage() {
   return (
     <div className="wrap pt-10 md:pt-16 section-end flex flex-col gap-12 md:gap-16 max-w-[960px]">
       <h1 className="t-h1">{d.admin.title}</h1>
+      {transfer && <p className="t-caption text-ink">{transfer === "ok" ? d.admin.transferDone : d.admin.transferNoUser}</p>}
 
       <section className="flex flex-col gap-4">
         <h2 className={h2}>
@@ -127,13 +129,19 @@ export default async function AdminPage() {
         </h2>
         <ul className="divide-y divide-hair">
           {approved.map((s) => (
-            <li key={s.id} className="flex items-center gap-4 py-3">
+            <li key={s.id} className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4 py-4">
               <Link href={`/${s.kind === "comic" ? "comics" : "novels"}/${s.slug}`} className="flex-1 min-w-0 flex flex-col hover:text-blue transition-colors">
                 <span className="text-[15px] truncate">{s.title_ar}</span>
                 <span className="t-caption">
                   {s.profiles?.display_name} · {s.episodes?.[0]?.count ?? 0}
                 </span>
               </Link>
+              <form action={transferSeries.bind(null, s.id)} className="flex items-center gap-3">
+                <input name="email" type="email" placeholder={d.admin.transferEmail} className="field h-9 text-[13px] w-[200px]" dir="ltr" />
+                <ConfirmButton message={d.admin.transfer + "؟"} className="t-link t-caption text-ink shrink-0">
+                  {d.admin.transfer}
+                </ConfirmButton>
+              </form>
               <form action={hideSeries.bind(null, s.id)} className="flex items-center gap-3">
                 <input name="note" placeholder={d.admin.rejectNote} className="field h-9 text-[13px] w-[180px]" />
                 <ConfirmButton message={d.admin.unpublishSeries + "؟"} className="t-link t-caption text-ink shrink-0">

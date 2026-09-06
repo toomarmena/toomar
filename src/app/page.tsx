@@ -67,9 +67,14 @@ export default async function HomePage() {
       <section className="wrap section section-end flex flex-col items-center gap-3 text-center">
         <span className="font-display text-[40px] leading-none">{d.home.toBeContinued}</span>
         <span className="text-[15px] text-ink-2">{d.home.closingLine}</span>
-        <Button variant="link" href="/studio">
-          {d.home.publishOn}
-        </Button>
+        <div className="flex items-center gap-6">
+          <Button variant="link" href="/studio">
+            {d.home.publishOn}
+          </Button>
+          <Button variant="link" href="/creators">
+            {d.directory.title}
+          </Button>
+        </div>
       </section>
     </div>
   );

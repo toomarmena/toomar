@@ -29,7 +29,7 @@ export function Shell({ children, signedIn, role, theme }: { children: ReactNode
     { href: "/library", label: d.nav.library, Icon: IconLibrary },
     { href: "/account", label: d.nav.account, Icon: IconUser },
   ];
-  const section = pathname.startsWith("/novels") ? "novels" : pathname.startsWith("/comics") ? "comics" : "";
+  const section = pathname.startsWith("/novels") ? "novels" : pathname.startsWith("/comics") ? "comics" : pathname.startsWith("/creators") ? "creators" : "";
 
   return (
     <>
@@ -45,6 +45,7 @@ export function Shell({ children, signedIn, role, theme }: { children: ReactNode
                 items={[
                   { key: "comics", label: d.nav.comics, href: "/comics" },
                   { key: "novels", label: d.nav.novels, href: "/novels" },
+                  { key: "creators", label: d.directory.title, href: "/creators" },
                 ]}
               />
             </div>

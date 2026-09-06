@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "./supabase/server";
 import { mediaUrl } from "./media";
 import type { Lang } from "./i18n";
-import type { CreatorProfile, EpisodeImage, EpisodeListItem, EpisodeRow, EpisodeStats, SeriesCardRow, SeriesDetail, SeriesSummary } from "./types";
+import type { CreatorCard, CreatorProfile, EpisodeImage, EpisodeListItem, EpisodeRow, EpisodeStats, SeriesCardRow, SeriesDetail, SeriesSummary } from "./types";
 import { SOCIAL_KEYS, type SeriesKind, type SocialLinks } from "./constants";
 
 const TINTS = ["#2B5CF6", "#6B4DE6", "#FFB800", "#FF7A59", "#1E44C2", "#111111"];
@@ -63,6 +63,35 @@ export async function getCreator(handleOrId: string): Promise<CreatorProfile | n
     if (byId) return toCreatorProfile(byId as ProfileRow);
   }
   return null;
+}
+
+export type CreatorFilter = "all" | "artists" | "authors";
+
+type CreatorCardRow = { id: string; display_name: string; handle: string; avatar_key: string | null; is_verified: boolean; bio: string | null; has_comics: boolean; has_novels: boolean; latest_approved_at: string | null };
+
+function toCreatorCard(r: CreatorCardRow): CreatorCard {
+  return { id: r.id, name: r.display_name, verified: r.is_verified, handle: r.handle, avatarUrl: mediaUrl(r.avatar_key), bio: r.bio, hasComics: r.has_comics, hasNovels: r.has_novels };
+}
+
+/** Everyone with a published series. Verified first, then the most recently published. */
+export async function listCreators(filter: CreatorFilter = "all"): Promise<CreatorCard[]> {
+  const supabase = await createClient();
+  let q = supabase.from("creator_cards").select("*").order("is_verified", { ascending: false }).order("latest_approved_at", { ascending: false });
+  if (filter === "artists") q = q.eq("has_comics", true);
+  if (filter === "authors") q = q.eq("has_novels", true);
+  const { data, error } = await q;
+  orEmpty(error, "listCreators");
+  return ((data ?? []) as CreatorCardRow[]).map(toCreatorCard);
+}
+
+export async function searchCreators(term: string): Promise<CreatorCard[]> {
+  const q = term.trim();
+  if (!q) return [];
+  const supabase = await createClient();
+  const like = `%${q.replace(/[%_]/g, "")}%`;
+  const { data, error } = await supabase.from("creator_cards").select("*").or(`display_name.ilike.${like},handle.ilike.${like}`).limit(12);
+  orEmpty(error, "searchCreators");
+  return ((data ?? []) as CreatorCardRow[]).map(toCreatorCard);
 }
 
 /** Retention numbers for one series. Empty unless the caller owns it or is the editor. */

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { setUiLang } from "@/app/account/actions";
 import { useLang, useT } from "./lang-provider";
 import { ThemeToggle } from "./theme-toggle";
@@ -11,9 +12,17 @@ export function SiteFooter({ theme }: { theme: "light" | "dark" }) {
   return (
     <footer className="border-t border-hair mt-auto">
       <div className="wrap py-8 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-        <span className="t-micro" dir="ltr">
-          toomar · web comics · novels
-        </span>
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+          <span className="t-micro" dir="ltr">
+            toomar · web comics · novels
+          </span>
+          <Link href="/privacy" className="t-caption hover:text-ink transition-colors">
+            {d.footer.privacy}
+          </Link>
+          <Link href="/terms" className="t-caption hover:text-ink transition-colors">
+            {d.footer.terms}
+          </Link>
+        </div>
         <div className="flex items-center gap-6">
           <form action={setUiLang} className="flex items-center gap-4" aria-label={d.common.language}>
             {(["ar", "en"] as const).map((l) => (

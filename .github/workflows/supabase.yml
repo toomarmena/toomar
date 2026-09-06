@@ -35,7 +35,15 @@ jobs:
       - name: Push migrations
         run: supabase db push
 
+      - name: Configure mail (Resend SMTP, Arabic templates, confirmation on)
+        if: ${{ secrets.RESEND_API_KEY != '' }}
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          node .github/scripts/auth-mail.mjs
+
       - name: Configure auth (site URL, redirects, email confirmation off for now)
+        if: ${{ secrets.RESEND_API_KEY == '' }}
         run: |
           curl --fail-with-body -sS -X PATCH \
             "https://api.supabase.com/v1/projects/$PROJECT_ID/config/auth" \

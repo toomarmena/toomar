@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { signInWithGoogle, signInWithPassword, signUpWithPassword, type AuthState } from "@/app/account/actions";
 import { useT } from "./lang-provider";
@@ -39,9 +40,16 @@ export function AuthForm({ next, initialError }: { next: string; initialError?: 
         </Button>
       </form>
 
-      <button type="button" onClick={() => setMode(mode === "in" ? "up" : "in")} className="t-link t-caption text-ink self-center">
-        {mode === "in" ? d.account.noAccount : d.account.haveAccount}
-      </button>
+      <div className="flex flex-col items-center gap-3">
+        <button type="button" onClick={() => setMode(mode === "in" ? "up" : "in")} className="t-link t-caption text-ink">
+          {mode === "in" ? d.account.noAccount : d.account.haveAccount}
+        </button>
+        {mode === "in" && (
+          <Link href="/account/forgot" className="t-link t-caption text-ink">
+            {d.account.forgot}
+          </Link>
+        )}
+      </div>
     </div>
   );
 }
