@@ -6,7 +6,8 @@ import { FollowButton } from "../follow-button";
 import { useLang, useT } from "../lang-provider";
 import { anonId } from "./chrome";
 import { recordEvent } from "@/app/reader-actions";
-import { EPISODE_WORD, formatNumber, weekdayLabel, type SeriesKind } from "@/lib/constants";
+import { EPISODE_WORD, formatNumber, weekdayLabel, type RunStatus, type SeriesKind } from "@/lib/constants";
+import { ShareRow } from "../share-row";
 import { fill } from "@/lib/i18n";
 
 /**
@@ -19,9 +20,12 @@ export function EndCard({
   episodeId,
   number,
   publishDay,
+  runStatus,
   nextHref,
   nextPreview,
   seriesHref,
+  seriesTitle,
+  creatorName,
   following,
   signedIn,
   track = true,
@@ -31,9 +35,12 @@ export function EndCard({
   episodeId: string;
   number: number;
   publishDay: number;
+  runStatus: RunStatus;
   nextHref: string | null;
   nextPreview: string[];
   seriesHref: string;
+  seriesTitle: string;
+  creatorName: string;
   following: boolean;
   signedIn: boolean;
   track?: boolean;
@@ -70,10 +77,14 @@ export function EndCard({
   return (
     <div ref={ref} className="mx-auto w-full max-w-[800px] flex flex-col items-center gap-4 px-5 py-10 border-t border-hair bg-surface">
       <span className="font-display text-[44px] leading-none text-ink">{d.reader.toBeContinued}</span>
-      <span className="text-[13px] text-muted">
+      <span className="text-[13px] text-muted text-center">
         {nextHref
           ? fill(d.reader.nextReady, { what: word, n: formatNumber(number + 1, ui) })
-          : fill(d.reader.nextOn, { what: word, n: formatNumber(number + 1, ui), day: weekdayLabel(publishDay, ui) })}
+          : runStatus === "completed"
+            ? d.reader.storyEnded
+            : runStatus === "hiatus"
+              ? d.reader.storyPaused
+              : fill(d.reader.nextOn, { what: word, n: formatNumber(number + 1, ui), day: weekdayLabel(publishDay, ui) })}
       </span>
       <div className="flex flex-col gap-2.5 w-full max-w-[420px] pt-1">
         {nextHref ? (
@@ -85,6 +96,9 @@ export function EndCard({
         <Link href={seriesHref} className="flex items-center justify-center h-12 border-[1.5px] border-hair text-ink font-semibold text-[15px] hover:border-ink">
           {d.reader.backToSeries}
         </Link>
+        <div className="flex justify-center pt-2">
+          <ShareRow path={seriesHref.split("?")[0]} title={seriesTitle} creator={creatorName} compact />
+        </div>
       </div>
     </div>
   );

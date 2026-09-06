@@ -2,8 +2,8 @@ import "server-only";
 import { createClient } from "./supabase/server";
 import { mediaUrl } from "./media";
 import type { Lang } from "./i18n";
-import type { EpisodeImage, EpisodeListItem, EpisodeRow, SeriesCardRow, SeriesDetail, SeriesSummary } from "./types";
-import type { SeriesKind } from "./constants";
+import type { CreatorProfile, EpisodeImage, EpisodeListItem, EpisodeRow, EpisodeStats, SeriesCardRow, SeriesDetail, SeriesSummary } from "./types";
+import { SOCIAL_KEYS, type SeriesKind, type SocialLinks } from "./constants";
 
 const TINTS = ["#2B5CF6", "#6B4DE6", "#FFB800", "#FF7A59", "#1E44C2", "#111111"];
 
@@ -25,11 +25,52 @@ export function toSummary(r: SeriesCardRow, lang: Lang = "ar"): SeriesSummary {
     publishDay: r.publish_day,
     coverUrl: mediaUrl(r.cover_key),
     tint: tintFor(r.id),
-    creator: { id: r.creator_id, name: r.creator_name, verified: r.creator_verified },
+    creator: { id: r.creator_id, name: r.creator_name, verified: r.creator_verified, handle: r.creator_handle, avatarUrl: mediaUrl(r.creator_avatar_key) },
     latestEpisode: r.latest_number ? { number: r.latest_number, publishedAt: r.latest_published_at! } : null,
     createdAt: r.approved_at ?? r.created_at,
     languages: r.languages,
+    runStatus: r.run_status ?? "ongoing",
+    ageRating: r.age_rating ?? "all",
   };
+}
+
+/** Keeps only the known social keys, as strings. */
+export function cleanSocialLinks(raw: unknown): SocialLinks {
+  const out: SocialLinks = {};
+  if (raw && typeof raw === "object") {
+    for (const k of SOCIAL_KEYS) {
+      const v = (raw as Record<string, unknown>)[k];
+      if (typeof v === "string" && v) out[k] = v;
+    }
+  }
+  return out;
+}
+
+type ProfileRow = { id: string; display_name: string; is_verified: boolean; handle: string; avatar_key: string | null; bio: string | null; social_links: unknown };
+
+function toCreatorProfile(p: ProfileRow): CreatorProfile {
+  return { id: p.id, name: p.display_name, verified: p.is_verified, handle: p.handle, avatarUrl: mediaUrl(p.avatar_key), bio: p.bio, socialLinks: cleanSocialLinks(p.social_links) };
+}
+
+/** A creator by handle, falling back to id (old links). */
+export async function getCreator(handleOrId: string): Promise<CreatorProfile | null> {
+  const supabase = await createClient();
+  const cols = "id, display_name, is_verified, handle, avatar_key, bio, social_links";
+  const { data } = await supabase.from("profiles").select(cols).eq("handle", handleOrId.toLowerCase()).maybeSingle();
+  if (data) return toCreatorProfile(data as ProfileRow);
+  if (/^[0-9a-f-]{36}$/i.test(handleOrId)) {
+    const { data: byId } = await supabase.from("profiles").select(cols).eq("id", handleOrId).maybeSingle();
+    if (byId) return toCreatorProfile(byId as ProfileRow);
+  }
+  return null;
+}
+
+/** Retention numbers for one series. Empty unless the caller owns it or is the editor. */
+export async function getSeriesStats(seriesId: string): Promise<EpisodeStats[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("series_stats", { sid: seriesId });
+  if (error) throw error;
+  return (data ?? []) as EpisodeStats[];
 }
 
 export function toDetail(r: SeriesCardRow, lang: Lang = "ar"): SeriesDetail {
@@ -43,11 +84,12 @@ function orEmpty(error: { message: string } | null, where: string) {
   if (error) console.error(`[toomar] ${where}: ${error.message}`);
 }
 
-export async function listApproved(opts: { kind?: SeriesKind; genre?: string; lang?: Lang } = {}): Promise<SeriesSummary[]> {
+export async function listApproved(opts: { kind?: SeriesKind; genre?: string; lang?: Lang; creatorId?: string } = {}): Promise<SeriesSummary[]> {
   const supabase = await createClient();
   let q = supabase.from("series_cards").select(CARD_COLUMNS).order("approved_at", { ascending: false });
   if (opts.kind) q = q.eq("kind", opts.kind);
   if (opts.genre) q = q.eq("genre", opts.genre);
+  if (opts.creatorId) q = q.eq("creator_id", opts.creatorId);
   const { data, error } = await q;
   orEmpty(error, "listApproved");
   return ((data ?? []) as SeriesCardRow[]).map((r) => toSummary(r, opts.lang));
@@ -74,11 +116,11 @@ export async function getSeriesBySlug(slug: string, lang?: Lang): Promise<Series
 /** A series by id through the base table: owners and the editor see it in any status. */
 export async function getSeriesById(id: string, lang?: Lang): Promise<SeriesDetail | null> {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("series").select("*, profiles!series_creator_id_fkey(id, display_name, is_verified)").eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("series").select("*, profiles!series_creator_id_fkey(id, display_name, is_verified, handle, avatar_key)").eq("id", id).maybeSingle();
   if (error) throw error;
   if (!data) return null;
-  const p = data.profiles as { id: string; display_name: string; is_verified: boolean };
-  const row: SeriesCardRow = { ...data, creator_id: p.id, creator_name: p.display_name, creator_verified: p.is_verified, latest_number: null, latest_published_at: null };
+  const p = data.profiles as { id: string; display_name: string; is_verified: boolean; handle: string; avatar_key: string | null };
+  const row: SeriesCardRow = { ...data, creator_id: p.id, creator_name: p.display_name, creator_verified: p.is_verified, creator_handle: p.handle, creator_avatar_key: p.avatar_key, latest_number: null, latest_published_at: null };
   return toDetail(row, lang);
 }
 
@@ -86,13 +128,18 @@ export async function listEpisodes(seriesId: string, lang: Lang): Promise<Episod
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("episodes")
-    .select("id, number, lang, title, published_at")
+    .select("id, number, lang, title, published_at, episode_images(key, position)")
     .eq("series_id", seriesId)
     .eq("lang", lang)
     .eq("is_published", true)
-    .order("number", { ascending: false });
+    .order("number", { ascending: false })
+    .order("position", { referencedTable: "episode_images", ascending: true })
+    .limit(1, { referencedTable: "episode_images" });
   if (error) throw error;
-  return (data ?? []).map((e) => ({ id: e.id, number: e.number, lang: e.lang, title: e.title, publishedAt: e.published_at }));
+  return (data ?? []).map((e) => {
+    const first = (e.episode_images as { key: string }[] | null)?.[0];
+    return { id: e.id, number: e.number, lang: e.lang, title: e.title, publishedAt: e.published_at, thumbUrl: mediaUrl(first?.key) };
+  });
 }
 
 export async function getEpisode(seriesId: string, number: number, lang: Lang, preview = false): Promise<EpisodeRow | null> {

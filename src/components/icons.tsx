@@ -80,3 +80,60 @@ export function VerifiedMark({ className = "" }: { className?: string }) {
     </span>
   );
 }
+
+// ---- social and sharing ----
+export const IconShare = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+  </svg>
+);
+export const IconLink = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" />
+    <path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
+  </svg>
+);
+export const IconGlobe = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+  </svg>
+);
+export const IconInstagram = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+export const IconX = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 4l16 16M20 4L4 20" />
+  </svg>
+);
+export const IconFacebook = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M14 8h3V4h-3a4 4 0 0 0-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8a1 1 0 0 1 0 0z" />
+  </svg>
+);
+export const IconYoutube = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="2" y="6" width="20" height="12" rx="4" />
+    <path d="M10 9.5v5l4.5-2.5z" fill="currentColor" stroke="none" />
+  </svg>
+);
+export const IconTiktok = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M14 4v10.5a3.5 3.5 0 1 1-3.5-3.5" />
+    <path d="M14 4c.5 2.5 2.2 4 4.5 4.2" />
+  </svg>
+);
+export const IconWhatsapp = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 20l1.3-3.8A8 8 0 1 1 8 19z" />
+    <path d="M9 9.5c0 2.5 3 5.5 5.5 5.5l1-1.5-2-1-1 1a5 5 0 0 1-2-2l1-1-1-2z" fill="currentColor" stroke="none" />
+  </svg>
+);

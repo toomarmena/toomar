@@ -33,7 +33,7 @@ export default async function StudioSeriesPage({ params }: PageProps<"/studio/[i
   const remove = deleteSeries.bind(null, series.id);
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-12 pt-6 md:pt-12 flex flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <Link href="/studio" className="text-sm text-muted hover:text-ink">
         ← {d.studio.title}
       </Link>

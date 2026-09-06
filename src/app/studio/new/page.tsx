@@ -13,7 +13,7 @@ export default async function NewSeriesPage({ searchParams }: PageProps<"/studio
   if (!user) redirect("/account?next=/studio/new");
   const { d } = await getDict();
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-12 pt-6 md:pt-12 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <Link href="/studio" className="text-sm text-muted hover:text-ink">
         ← {d.studio.title}
       </Link>

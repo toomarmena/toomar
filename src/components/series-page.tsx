@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Avatar } from "./avatar";
 import { Cover } from "./cover";
 import { FollowButton } from "./follow-button";
 import { VerifiedMark } from "./icons";
-import { EPISODE_WORD, formatNumber, genreLabel, weekdayLabel, type SeriesKind } from "@/lib/constants";
+import { ShareRow } from "./share-row";
+import { AGE_RATING, EPISODE_WORD, RUN_STATUS, formatNumber, genreLabel, weekdayLabel, type SeriesKind } from "@/lib/constants";
+import { creatorHref } from "@/lib/links";
 import { fill, isLang, type Lang } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
 import { getProgress, getSeriesBySlug, isFollowing, listEpisodes } from "@/lib/queries";
@@ -61,13 +64,20 @@ export async function SeriesPage({ kind, slug, langParam }: { kind: SeriesKind; 
           <h1 className="font-display text-[30px] md:text-[48px] leading-tight text-balance" lang={contentLang} dir={contentLang === "ar" ? "rtl" : "ltr"}>
             {title}
           </h1>
-          <p className="flex items-center gap-1.5 text-sm text-ink-2">
+          <Link href={creatorHref(series.creator)} className="flex items-center gap-2 text-sm text-ink-2 self-start group">
+            <Avatar src={series.creator.avatarUrl} name={series.creator.name} size={28} />
             <span className="text-muted">{d.series.by}</span>
-            <span className="font-semibold text-ink">{series.creator.name}</span>
+            <span className="font-semibold text-ink group-hover:text-blue">{series.creator.name}</span>
             {series.creator.verified && <VerifiedMark />}
-          </p>
-          <p className="text-sm text-ink-2">
-            <span className="text-muted">{d.series.publishDay}:</span> {fill(d.series.every, { day: weekdayLabel(series.publishDay, ui) })}
+          </Link>
+          <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-2">
+            <span>
+              <span className="text-muted">{d.series.publishDay}:</span>{" "}
+              {series.runStatus === "ongoing" ? fill(d.series.every, { day: weekdayLabel(series.publishDay, ui) }) : RUN_STATUS.find((r) => r.key === series.runStatus)?.[ui]}
+            </span>
+            <span className="inline-flex items-center px-1.5 py-0.5 border border-hair text-[11px] font-semibold text-ink-2" title={AGE_RATING.find((r) => r.key === series.ageRating)?.[ui]}>
+              {AGE_RATING.find((r) => r.key === series.ageRating)?.short[ui]}
+            </span>
           </p>
           <div className="hidden md:block">
             {description && (
@@ -84,6 +94,7 @@ export async function SeriesPage({ kind, slug, langParam }: { kind: SeriesKind; 
             )}
             <FollowButton seriesId={series.id} initial={following} signedIn={!!user} next={base} size="lg" />
           </div>
+          <ShareRow path={base} title={title} creator={series.creator.name} />
         </div>
       </section>
 
@@ -102,7 +113,15 @@ export async function SeriesPage({ kind, slug, langParam }: { kind: SeriesKind; 
             {episodes.map((e) => (
               <li key={e.id}>
                 <Link href={`${base}/${e.number}?lang=${contentLang}`} className="flex items-center gap-4 py-3.5 hover:bg-surface -mx-2 px-2">
-                  <span className="font-display text-2xl w-12 text-center text-ink shrink-0">{formatNumber(e.number, ui)}</span>
+                  {e.thumbUrl ? (
+                    <span className="relative w-14 h-14 shrink-0 overflow-hidden bg-surface border border-hair">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={e.thumbUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover object-top" />
+                      <span className="absolute bottom-0 end-0 px-1 bg-white/90 font-display text-sm leading-tight">{formatNumber(e.number, ui)}</span>
+                    </span>
+                  ) : (
+                    <span className="font-display text-2xl w-14 h-14 flex items-center justify-center text-ink shrink-0 bg-surface border border-hair">{formatNumber(e.number, ui)}</span>
+                  )}
                   <span className="flex flex-col gap-0.5 min-w-0 flex-1">
                     <span className="font-semibold truncate" lang={contentLang} dir={contentLang === "ar" ? "rtl" : "ltr"}>
                       {e.title || `${word} ${formatNumber(e.number, ui)}`}

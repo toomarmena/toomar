@@ -91,6 +91,9 @@ export async function ReaderPage({
         episodeId={episode.id}
         number={number}
         publishDay={series.publishDay}
+        runStatus={series.runStatus}
+        seriesTitle={title}
+        creatorName={series.creator.name}
         nextHref={href(neighbours.next)}
         nextPreview={nextPreview}
         seriesHref={backHref}

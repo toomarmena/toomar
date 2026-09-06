@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { GENRES, type GenreKey } from "@/lib/constants";
+import { AGE_RATING, GENRES, RUN_STATUS, SOCIAL_KEYS, type AgeRating, type GenreKey, type RunStatus, type SocialLinks } from "@/lib/constants";
 import { isLang, type Lang } from "@/lib/i18n";
 import { deleteObject, deleteObjects, presignUpload } from "@/lib/r2";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -58,7 +58,76 @@ function readSeriesForm(form: FormData) {
   const genre = GENRES.some((g) => g.key === genreRaw) ? (genreRaw as GenreKey) : null;
   const publish_day = Number(form.get("publish_day"));
   const languages = form.getAll("languages").filter(isLang) as Lang[];
-  return { kind, title_ar, title_en, description_ar, description_en, genre, publish_day, languages: languages.length ? languages : (["ar"] as Lang[]) };
+  const rs = String(form.get("run_status") ?? "ongoing");
+  const run_status: RunStatus = RUN_STATUS.some((r) => r.key === rs) ? (rs as RunStatus) : "ongoing";
+  const ar = String(form.get("age_rating") ?? "all");
+  const age_rating: AgeRating = AGE_RATING.some((r) => r.key === ar) ? (ar as AgeRating) : "all";
+  return { kind, title_ar, title_en, description_ar, description_en, genre, publish_day, languages: languages.length ? languages : (["ar"] as Lang[]), run_status, age_rating };
+}
+
+// ---------- public profile ----------
+const HANDLE_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** Turns "@name", "name" or a full address into a full address for the given network. */
+function normaliseSocial(key: (typeof SOCIAL_KEYS)[number], raw: string): string | null {
+  const v = raw.trim();
+  if (!v) return null;
+  if (/^https?:\/\//i.test(v)) return v.slice(0, 300);
+  const user = v.replace(/^@/, "").replace(/^www\./, "");
+  if (!user) return null;
+  switch (key) {
+    case "instagram":
+      return `https://instagram.com/${user}`;
+    case "x":
+      return `https://x.com/${user}`;
+    case "facebook":
+      return `https://facebook.com/${user}`;
+    case "youtube":
+      return user.startsWith("@") || user.includes("/") ? `https://youtube.com/${user}` : `https://youtube.com/@${user}`;
+    case "tiktok":
+      return `https://tiktok.com/@${user}`;
+    case "website":
+      return `https://${user}`;
+  }
+}
+
+export type ProfileState = { error?: "handleTaken" | "handleBad" | "required" | "generic"; saved?: boolean } | null;
+
+export async function updatePublicProfile(_prev: ProfileState, form: FormData): Promise<ProfileState> {
+  const { supabase, user } = await requireUser();
+  const display_name = String(form.get("display_name") ?? "").trim().slice(0, 60);
+  const handle = String(form.get("handle") ?? "").trim().toLowerCase();
+  const bio = String(form.get("bio") ?? "").trim().slice(0, 500) || null;
+  if (!display_name) return { error: "required" };
+  if (!HANDLE_RE.test(handle) || handle.length < 3 || handle.length > 30) return { error: "handleBad" };
+  const social_links: SocialLinks = {};
+  for (const k of SOCIAL_KEYS) {
+    const v = normaliseSocial(k, String(form.get(`social_${k}`) ?? ""));
+    if (v) social_links[k] = v;
+  }
+  const { error } = await supabase.from("profiles").update({ display_name, handle, bio, social_links }).eq("id", user.id);
+  if (error) return { error: error.code === "23505" ? "handleTaken" : "generic" };
+  revalidatePath("/studio/profile");
+  revalidatePath(`/creators/${handle}`);
+  revalidatePath("/account");
+  return { saved: true };
+}
+
+export async function presignAvatar(contentType: string) {
+  const { user } = await requireUser();
+  if (!IMAGE_TYPES.has(contentType)) throw new Error("type");
+  const ext = contentType === "image/png" ? "png" : contentType === "image/jpeg" ? "jpg" : "webp";
+  return presignUpload(`avatars/${user.id}/${Date.now()}.${ext}`, contentType);
+}
+
+export async function setAvatar(key: string) {
+  const { supabase, user } = await requireUser();
+  if (!key.startsWith(`avatars/${user.id}/`)) throw new Error("key");
+  const { data: prev } = await supabase.from("profiles").select("avatar_key, handle").eq("id", user.id).maybeSingle();
+  await supabase.from("profiles").update({ avatar_key: key }).eq("id", user.id);
+  if (prev?.avatar_key) await deleteObject(prev.avatar_key).catch(() => {});
+  revalidatePath("/studio/profile");
+  if (prev?.handle) revalidatePath(`/creators/${prev.handle}`);
 }
 
 export async function createSeries(form: FormData) {

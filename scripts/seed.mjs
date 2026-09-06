@@ -4,7 +4,8 @@
  *   node scripts/seed.mjs D:\toomar-content\whispers-in-the-rain
  *
  * Folder layout (see D:\toomar-content\README.txt):
- *   series.json          kind, titles, descriptions, genre, publish_day, languages, creator_email, creator_name
+ *   series.json          kind, titles, descriptions, genre, publish_day, languages, run_status, age_rating,
+ *                        creator_email, creator_name, creator_handle, creator_avatar, creator_socials
  *   cover.jpg|png|webp   portrait cover
  *   ar/01/*.jpg          comic: one folder per episode per language, images in reading order
  *   ar/01.txt            novel: one text file per chapter; first line is the title
@@ -60,6 +61,10 @@ const publishDay = typeof meta.publish_day === "number" ? meta.publish_day : DAY
 if (!(publishDay >= 0 && publishDay <= 6)) fail("publish_day must be a weekday name or 0–6");
 const languages = (meta.languages || ["ar"]).filter((l) => l === "ar" || l === "en");
 if (!meta.creator_email) fail("series.json needs creator_email");
+const runStatus = ["ongoing", "completed", "hiatus"].includes(meta.run_status) ? meta.run_status : "ongoing";
+const ageRating = ["all", "13", "16"].includes(String(meta.age_rating)) ? String(meta.age_rating) : "all";
+const SOCIAL_KEYS = ["instagram", "x", "facebook", "youtube", "tiktok", "website"];
+if (meta.creator_handle && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(meta.creator_handle)) fail("creator_handle: lowercase letters, digits and dashes only");
 
 // ---------- clients ----------
 const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -104,6 +109,23 @@ async function ensureCreator() {
   const patch = { role: "creator" };
   if (meta.creator_name) patch.display_name = meta.creator_name;
   if (meta.creator_verified === true) patch.is_verified = true;
+  if (meta.creator_handle) patch.handle = meta.creator_handle;
+  if (meta.creator_bio) patch.bio = String(meta.creator_bio).slice(0, 500);
+  if (meta.creator_socials && typeof meta.creator_socials === "object") {
+    patch.social_links = Object.fromEntries(SOCIAL_KEYS.filter((k) => typeof meta.creator_socials[k] === "string" && meta.creator_socials[k]).map((k) => [k, meta.creator_socials[k]]));
+  }
+  if (meta.creator_avatar) {
+    const file = join(root, meta.creator_avatar);
+    if (!existsSync(file)) fail(`creator_avatar not found: ${file}`);
+    const img = sharp(file).rotate();
+    const m = await img.metadata();
+    const side = Math.min(m.width, m.height);
+    const buf = await img.extract({ left: Math.floor((m.width - side) / 2), top: Math.floor((m.height - side) / 2), width: side, height: side }).resize({ width: 400, withoutEnlargement: true }).webp({ quality: 88 }).toBuffer();
+    const key = `avatars/${user.id}/${Date.now()}.webp`;
+    await put(key, buf, "image/webp");
+    patch.avatar_key = key;
+    console.log(`+ avatar uploaded (${Math.round(buf.length / 1024)} KB)`);
+  }
   const { data: prof } = await db.from("profiles").select("role").eq("id", user.id).maybeSingle();
   if (prof?.role === "admin") delete patch.role;
   const { error } = await db.from("profiles").update(patch).eq("id", user.id);
@@ -123,6 +145,8 @@ async function ensureSeries(creatorId) {
     description_ar: meta.description_ar || null,
     description_en: meta.description_en || null,
     languages,
+    run_status: runStatus,
+    age_rating: ageRating,
   };
   const { data: existing } = await db.from("series").select("id, status, cover_key").eq("slug", slug).maybeSingle();
   let id = existing?.id;

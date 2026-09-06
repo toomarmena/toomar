@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Cover } from "@/components/cover";
 import { VerifiedMark } from "@/components/icons";
-import { seriesHref } from "@/lib/links";
+import { creatorHref, seriesHref } from "@/lib/links";
 import { EPISODE_WORD, formatNumber, weekdayLabel } from "@/lib/constants";
 import { fill } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
@@ -67,10 +67,10 @@ export default async function LibraryPage() {
                   <Link href={base} className="font-semibold leading-snug truncate hover:text-blue">
                     {s.title}
                   </Link>
-                  <span className="flex items-center gap-1.5 text-xs text-muted">
+                  <Link href={creatorHref(s.creator)} className="flex items-center gap-1.5 text-xs text-muted hover:text-ink">
                     {s.creator.name}
                     {s.creator.verified && <VerifiedMark />}
-                  </span>
+                  </Link>
                   <span className="text-xs text-ink-2">
                     {s.latestEpisode ? `${word} ${formatNumber(s.latestEpisode.number, lang)} · ` : ""}
                     {fill(d.series.every, { day: weekdayLabel(s.publishDay, lang) })}

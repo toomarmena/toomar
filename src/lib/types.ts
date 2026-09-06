@@ -1,10 +1,17 @@
-import type { GenreKey, SeriesKind } from "./constants";
+import type { AgeRating, GenreKey, RunStatus, SeriesKind, SocialLinks } from "./constants";
 import type { Lang } from "./i18n";
 
 export type Creator = {
   id: string;
   name: string;
   verified: boolean;
+  handle: string;
+  avatarUrl: string | null;
+};
+
+export type CreatorProfile = Creator & {
+  bio: string | null;
+  socialLinks: SocialLinks;
 };
 
 /** What a card or list needs. Built from the `series_cards` view. */
@@ -22,6 +29,8 @@ export type SeriesSummary = {
   latestEpisode: { number: number; publishedAt: string } | null;
   createdAt: string;
   languages: Lang[];
+  runStatus: RunStatus;
+  ageRating: AgeRating;
 };
 
 export type SeriesDetail = SeriesSummary & {
@@ -36,6 +45,7 @@ export type EpisodeListItem = {
   lang: Lang;
   title: string | null;
   publishedAt: string | null;
+  thumbUrl: string | null;
 };
 
 export type EpisodeImage = { id: string; url: string; width: number; height: number };
@@ -61,6 +71,10 @@ export type SeriesCardRow = {
   creator_verified: boolean;
   latest_number: number | null;
   latest_published_at: string | null;
+  run_status: RunStatus;
+  age_rating: AgeRating;
+  creator_handle: string;
+  creator_avatar_key: string | null;
 };
 
 export type SeriesRow = {
@@ -84,6 +98,17 @@ export type SeriesRow = {
   updated_at: string;
   submitted_at: string | null;
   approved_at: string | null;
+  run_status: RunStatus;
+  age_rating: AgeRating;
+};
+
+export type EpisodeStats = {
+  episode_id: string;
+  number: number;
+  lang: Lang;
+  openers: number;
+  completers: number;
+  returned: number;
 };
 
 export type EpisodeRow = {

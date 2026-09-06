@@ -47,6 +47,24 @@ export const EPISODE_WORD: Record<SeriesKind, { ar: string; en: string }> = {
   novel: { ar: "الفصل", en: "Chapter" },
 };
 
+export const RUN_STATUS = [
+  { key: "ongoing", ar: "مستمرة", en: "Ongoing" },
+  { key: "completed", ar: "مكتملة", en: "Completed" },
+  { key: "hiatus", ar: "متوقفة مؤقتاً", en: "On hiatus" },
+] as const;
+export type RunStatus = (typeof RUN_STATUS)[number]["key"];
+
+export const AGE_RATING = [
+  { key: "all", ar: "لجميع الأعمار", en: "All ages", short: { ar: "الجميع", en: "All" } },
+  { key: "13", ar: "لمن هم فوق ١٣ عاماً", en: "Ages 13 and up", short: { ar: "+١٣", en: "13+" } },
+  { key: "16", ar: "لمن هم فوق ١٦ عاماً", en: "Ages 16 and up", short: { ar: "+١٦", en: "16+" } },
+] as const;
+export type AgeRating = (typeof AGE_RATING)[number]["key"];
+
+export const SOCIAL_KEYS = ["instagram", "x", "facebook", "youtube", "tiktok", "website"] as const;
+export type SocialKey = (typeof SOCIAL_KEYS)[number];
+export type SocialLinks = Partial<Record<SocialKey, string>>;
+
 const ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
 export function arabicNumber(n: number) {
   return String(n).replace(/\d/g, (d) => ARABIC_DIGITS[Number(d)]);

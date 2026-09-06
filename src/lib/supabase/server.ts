@@ -46,6 +46,9 @@ export type Profile = {
   is_verified: boolean;
   bio: string | null;
   ui_lang: "ar" | "en";
+  handle: string;
+  avatar_key: string | null;
+  social_links: Record<string, string>;
 };
 
 export async function getProfile(): Promise<Profile | null> {

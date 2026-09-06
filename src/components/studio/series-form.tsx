@@ -1,6 +1,6 @@
 "use client";
 
-import { GENRES, WEEK_ORDER, weekdayLabel } from "@/lib/constants";
+import { AGE_RATING, GENRES, RUN_STATUS, WEEK_ORDER, weekdayLabel } from "@/lib/constants";
 import type { SeriesRow } from "@/lib/types";
 import { useLang, useT } from "../lang-provider";
 
@@ -73,6 +73,30 @@ export function SeriesForm({ action, series, error }: { action: (form: FormData)
             ))}
           </select>
         </label>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <label className={label}>
+          {d.studio.runStatus}
+          <select name="run_status" defaultValue={series?.run_status ?? "ongoing"} className={input}>
+            {RUN_STATUS.map((r) => (
+              <option key={r.key} value={r.key}>
+                {r[lang]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <fieldset className="flex flex-col gap-1.5 text-sm font-semibold">
+          <legend className="mb-1.5">{d.studio.ageRating}</legend>
+          <div className="flex flex-col gap-1.5 font-normal">
+            {AGE_RATING.map((r) => (
+              <label key={r.key} className="flex items-center gap-2">
+                <input type="radio" name="age_rating" value={r.key} defaultChecked={(series?.age_rating ?? "all") === r.key} className="accent-blue" />
+                {r[lang]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
       </div>
 
       <fieldset className="flex flex-col gap-1.5 text-sm font-semibold">

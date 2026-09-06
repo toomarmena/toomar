@@ -3,11 +3,11 @@ import { AuthForm } from "@/components/auth-form";
 import { VerifiedMark } from "@/components/icons";
 import { getDict } from "@/lib/lang-server";
 import { getProfile } from "@/lib/supabase/server";
-import { setUiLang, signOut, updateProfile } from "./actions";
+import { Avatar } from "@/components/avatar";
+import { mediaUrl } from "@/lib/media";
+import { setUiLang, signOut } from "./actions";
 
 export const metadata = { title: "حسابي" };
-
-const input = "w-full h-12 px-4 border border-hair bg-white text-ink focus:outline-none focus:border-ink";
 
 export default async function AccountPage({ searchParams }: PageProps<"/account">) {
   const sp = await searchParams;
@@ -39,16 +39,19 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
       </div>
 
       <div className="flex items-center gap-4 p-4 bg-surface border border-hair">
-        <div className="w-14 h-14 rounded-full bg-blue text-white flex items-center justify-center font-display text-2xl shrink-0">
-          {profile.display_name.charAt(0)}
-        </div>
-        <div className="flex flex-col gap-0.5 min-w-0">
+        <Avatar src={mediaUrl(profile.avatar_key)} name={profile.display_name} size={56} />
+        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
           <span className="font-semibold flex items-center gap-1.5">
             {profile.display_name}
             {profile.is_verified && <VerifiedMark />}
           </span>
-          <span className="text-xs text-muted">{d.account.role[profile.role]}</span>
+          <span className="text-xs text-muted">
+            {d.account.role[profile.role]} · <span dir="ltr">@{profile.handle}</span>
+          </span>
         </div>
+        <Link href="/studio/profile" className="text-sm font-semibold text-blue underline underline-offset-4 shrink-0">
+          {d.account.editProfile}
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-3">
@@ -64,20 +67,6 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
           </Link>
         )}
       </div>
-
-      <form action={updateProfile} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1.5 text-sm font-semibold">
-          {d.account.name}
-          <input name="display_name" defaultValue={profile.display_name} required maxLength={60} className={input} />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm font-semibold">
-          {d.account.bio}
-          <textarea name="bio" defaultValue={profile.bio ?? ""} maxLength={500} rows={3} className="w-full p-4 border border-hair bg-white text-ink focus:outline-none focus:border-ink font-normal" />
-        </label>
-        <button type="submit" className="self-start px-6 h-11 bg-ink text-white font-semibold">
-          {d.account.save}
-        </button>
-      </form>
 
       <form action={setUiLang} className="flex items-center gap-3 text-sm">
         <span className="font-semibold">{d.account.uiLang}</span>

@@ -36,7 +36,7 @@ export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[
   const previewHref = `/preview/${series.id}/${episode.number}?lang=${episode.lang}`;
 
   return (
-    <div className="mx-auto max-w-[900px] px-4 md:px-12 pt-6 md:pt-12 flex flex-col gap-8">
+    <div className="max-w-[900px] flex flex-col gap-8">
       <Link href={`/studio/${series.id}`} className="text-sm text-muted hover:text-ink">
         ← {series.title_ar}
       </Link>

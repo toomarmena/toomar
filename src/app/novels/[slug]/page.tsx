@@ -5,7 +5,14 @@ import { getSeriesBySlug } from "@/lib/queries";
 export async function generateMetadata({ params }: PageProps<"/novels/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const s = await getSeriesBySlug(slug).catch(() => null);
-  return s ? { title: s.title, description: s.descriptionAr ?? undefined } : {};
+  if (!s) return {};
+  const description = s.descriptionAr ?? s.descriptionEn ?? undefined;
+  return {
+    title: s.title,
+    description,
+    openGraph: { title: s.title, description, type: "website", images: s.coverUrl ? [{ url: s.coverUrl, width: 600, height: 900 }] : undefined },
+    twitter: { card: "summary", title: s.title, description },
+  };
 }
 
 export default async function NovelSeriesPage({ params, searchParams }: PageProps<"/novels/[slug]">) {

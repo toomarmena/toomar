@@ -29,7 +29,7 @@ export default async function StudioPage() {
   const list = (data ?? []) as SeriesRow[];
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-12 pt-6 md:pt-12 flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <h1 className="font-display text-[34px] leading-tight">{d.studio.title}</h1>

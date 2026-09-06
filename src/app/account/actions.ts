@@ -84,16 +84,3 @@ export async function setUiLang(form: FormData) {
   if (user) await supabase.from("profiles").update({ ui_lang: lang }).eq("id", user.id);
   revalidatePath("/", "layout");
 }
-
-export async function updateProfile(form: FormData) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return;
-  const display_name = String(form.get("display_name") ?? "").trim().slice(0, 60);
-  const bio = String(form.get("bio") ?? "").trim().slice(0, 500) || null;
-  if (!display_name) return;
-  await supabase.from("profiles").update({ display_name, bio }).eq("id", user.id);
-  revalidatePath("/account");
-}

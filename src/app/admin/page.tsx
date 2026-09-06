@@ -10,6 +10,7 @@ import { mediaUrl } from "@/lib/media";
 import { tintFor } from "@/lib/queries";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import type { SeriesRow } from "@/lib/types";
+import { AGE_RATING, RUN_STATUS } from "@/lib/constants";
 import { approveSeries, hideSeries, rejectSeries, setVerified } from "./actions";
 
 export const metadata = { title: "لوحة التحرير" };
@@ -60,7 +61,7 @@ export default async function AdminPage() {
                     {s.profiles?.is_verified && <VerifiedMark />}
                   </span>
                   <span className="text-xs text-muted">
-                    {s.kind === "comic" ? d.studio.comic : d.studio.novel} · {s.episodes?.[0]?.count ?? 0} · {d.admin.submittedAt}{" "}
+                    {s.kind === "comic" ? d.studio.comic : d.studio.novel} · {RUN_STATUS.find((r) => r.key === s.run_status)?.ar} · {AGE_RATING.find((r) => r.key === s.age_rating)?.ar} · {s.episodes?.[0]?.count ?? 0} · {d.admin.submittedAt}{" "}
                     {s.submitted_at ? new Date(s.submitted_at).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : ""}
                   </span>
                   {s.description_ar && <p className="text-sm text-ink-2 line-clamp-3 whitespace-pre-line">{s.description_ar}</p>}

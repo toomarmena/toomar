@@ -17,12 +17,13 @@ async function homeData(lang: Lang) {
   const thisWeek = all
     .filter((s) => s.latestEpisode && now - Date.parse(s.latestEpisode.publishedAt) < WEEK)
     .sort((a, b) => Date.parse(b.latestEpisode!.publishedAt) - Date.parse(a.latestEpisode!.publishedAt));
-  return { all, picks, thisWeek, fresh: all.slice(0, 6), today: cairoWeekday(now) };
+  const running = all.filter((s) => s.runStatus === "ongoing");
+  return { running, picks, thisWeek, fresh: all.slice(0, 6), today: cairoWeekday(now) };
 }
 
 export default async function HomePage() {
   const { lang, d } = await getDict();
-  const { all, picks, thisWeek, fresh, today } = await homeData(lang);
+  const { running, picks, thisWeek, fresh, today } = await homeData(lang);
 
   return (
     <div className="mx-auto max-w-[1440px] px-4 md:px-12 flex flex-col gap-12 md:gap-16 pb-8">
@@ -59,7 +60,7 @@ export default async function HomePage() {
       </Section>
 
       <Section title={d.home.schedule} lead={d.home.scheduleLead}>
-        <WeekSchedule items={all} today={today} />
+        <WeekSchedule items={running} today={today} />
       </Section>
 
       <Section title={d.home.fresh} lead={d.home.freshLead}>
