@@ -29,9 +29,9 @@ export function WeekSchedule({ items, today }: { items: SeriesSummary[]; today: 
         <p className="t-caption py-10 text-center">{fill(d.home.nothingOn, { day: weekdayLabel(day, lang) })}</p>
       ) : (
         <ul className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-6">
-          {list.map((s, i) => (
+          {list.map((s) => (
             <li key={s.id}>
-              <CoverCard series={s} compact peek={i % 6 === 5 ? "start" : "end"} />
+              <CoverCard series={s} compact />
             </li>
           ))}
         </ul>

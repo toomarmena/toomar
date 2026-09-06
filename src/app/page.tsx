@@ -25,7 +25,7 @@ function Grid({ items, priority = false }: { items: SeriesSummary[]; priority?: 
     <ul className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
       {items.map((s, i) => (
         <li key={s.id}>
-          <CoverCard series={s} priority={priority && i < 4} peek={i % 4 === 3 ? "start" : "end"} />
+          <CoverCard series={s} priority={priority && i < 4} />
         </li>
       ))}
     </ul>
