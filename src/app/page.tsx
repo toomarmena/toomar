@@ -1,69 +1,91 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Section } from "@/components/section";
+import { SeriesRail } from "@/components/series-card";
+import { WeekSchedule } from "@/components/week-schedule";
+import { IconArrowLeft } from "@/components/icons";
+import { GENRES } from "@/lib/constants";
+import { SAMPLE_PICKS, SAMPLE_SERIES } from "@/lib/sample-data";
 
-export default function Home() {
+const WEEK = 7 * 86400000;
+
+/** Assembles the five home sections. Runs on the server per request. */
+function homeData() {
+  const all = SAMPLE_SERIES;
+  const picks = SAMPLE_PICKS.map((id) => all.find((s) => s.id === id)!).filter(Boolean);
+  const now = Date.now();
+  const thisWeek = all
+    .filter((s) => s.latestEpisode && now - Date.parse(s.latestEpisode.publishedAt) < WEEK)
+    .sort((a, b) => Date.parse(b.latestEpisode!.publishedAt) - Date.parse(a.latestEpisode!.publishedAt));
+  const fresh = [...all].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt)).slice(0, 6);
+  // Cairo's weekday, so the schedule opens on the right day for readers there.
+  const today = new Date(new Date(now).toLocaleString("en-US", { timeZone: "Africa/Cairo" })).getDay();
+  return { all, picks, thisWeek, fresh, today };
+}
+
+export default function HomePage() {
+  const { all, picks, thisWeek, fresh, today } = homeData();
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="mx-auto max-w-[1440px] px-4 md:px-12 flex flex-col gap-12 md:gap-16 pb-8">
+      <section className="pt-6 md:pt-16 flex flex-col gap-4 md:gap-7 md:max-w-[720px]">
+        <span className="inline-flex items-center gap-2.5 text-[13px] font-semibold text-blue tracking-[0.04em]">
+          <span className="inline-block w-7 h-0.5 bg-blue" />
+          منصة عربية للقصص المصوّرة والروايات
+        </span>
+        <h1 className="font-display text-[44px] md:text-[84px] leading-[1.15] text-balance">
+          قصص عربية،
+          <br />
+          حلقةً بعد حلقة.
+        </h1>
+        <p className="text-base md:text-xl leading-relaxed text-ink-2 max-w-[560px]">أعمال أصلية من كتّاب وفنانين عرب، تصدر في حلقات أسبوعية.</p>
+        <div className="flex items-center gap-5 pt-1">
+          <Link href="/comics" className="inline-flex items-center gap-3 px-6 py-3.5 md:px-7 md:py-4 bg-blue text-white font-bold text-[15px] md:text-[17px] hover:bg-blue-deep">
+            ابدأ القراءة
+            <IconArrowLeft width={20} height={20} strokeWidth={2.4} />
+          </Link>
+          <Link href="/studio" className="text-[15px] font-medium text-ink-2 border-b border-hair pb-0.5 hover:text-ink hover:border-ink">
+            لديك قصة؟ انشرها
+          </Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <Section title="مختارات طومار" lead="اختيار المحرّر لهذا الأسبوع.">
+        <SeriesRail items={picks} priorityFirst />
+      </Section>
+
+      <Section title="حلقات هذا الأسبوع" lead="ما صدر خلال الأيام السبعة الماضية." href="/comics" hrefLabel="جميع القصص">
+        <SeriesRail items={thisWeek} />
+      </Section>
+
+      <Section title="جدول الأسبوع" lead="اختر يوماً لترى ما يصدر فيه.">
+        <WeekSchedule items={all} today={today} />
+      </Section>
+
+      <Section title="صدر حديثاً" lead="سلاسل انضمت إلى طومار مؤخراً.">
+        <SeriesRail items={fresh} />
+      </Section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className="font-display text-[28px] md:text-[34px] leading-tight">تصفّح حسب النوع</h2>
+        <ul className="flex flex-wrap gap-2">
+          {GENRES.map((g) => (
+            <li key={g.key}>
+              <Link href={`/comics?genre=${g.key}`} className="inline-block px-4 py-2 text-sm font-semibold bg-surface border border-hair hover:border-ink">
+                {g.ar}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="-mx-4 md:mx-0 bg-yellow text-ink px-6 py-10 md:px-14 md:py-14 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="flex flex-col gap-2">
+          <span className="font-display text-[56px] md:text-[72px] leading-none">يُتبع…</span>
+          <span className="text-base md:text-lg font-medium">لديك قصة؟ انشر حلقتها الأولى اليوم.</span>
         </div>
-      </main>
+        <Link href="/studio" className="self-start md:self-auto px-8 py-4 bg-ink text-white font-bold text-[17px]">
+          انشر على طومار
+        </Link>
+      </section>
     </div>
   );
 }
