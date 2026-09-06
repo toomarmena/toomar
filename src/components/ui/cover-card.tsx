@@ -9,7 +9,7 @@ import { seriesHref } from "@/lib/links";
 import type { SeriesSummary } from "@/lib/types";
 
 /**
- * The core of the site: a 2:3 cover, then the title (Reem Kufi 500),
+ * The core of the site: a 2:3 cover, then the title (El Messiri 500),
  * one caption line (creator · weekday), then the Latin micro-label.
  * Nothing on the cover itself.
  */

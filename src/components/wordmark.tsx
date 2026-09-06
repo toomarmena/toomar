@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/** «طومار» in Reem Kufi 500 with the TOOMAR micro-label under it. On every screen. */
+/** «طومار» in El Messiri 500 with the TOOMAR micro-label under it. On every screen. */
 export function Wordmark({ size = "md", micro = true, href = "/" }: { size?: "sm" | "md" | "lg"; micro?: boolean; href?: string }) {
   const cls = { sm: "text-[20px]", md: "text-[22px]", lg: "text-[32px]" }[size];
   return (
