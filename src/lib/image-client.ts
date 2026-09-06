@@ -9,12 +9,18 @@ export type Prepared = { blob: Blob; width: number; height: number; contentType:
 
 const MAX_CANVAS_HEIGHT = 16000; // browsers refuse larger canvases; tall strips get split by the creator
 
-export async function prepareImage(file: File, maxWidth: number, quality = 0.86): Promise<Prepared> {
+export async function prepareImage(file: File, maxWidth: number, quality = 0.86, aspect?: number): Promise<Prepared> {
   const bitmap = await createImageBitmap(file);
   try {
-    const scale = Math.min(1, maxWidth / bitmap.width);
-    const width = Math.round(bitmap.width * scale);
-    const height = Math.round(bitmap.height * scale);
+    // Optional centre crop to a fixed ratio (covers are always 2:3).
+    let sx = 0, sy = 0, sw = bitmap.width, sh = bitmap.height;
+    if (aspect) {
+      if (sw / sh > aspect) { sw = Math.round(sh * aspect); sx = Math.round((bitmap.width - sw) / 2); }
+      else { sh = Math.round(sw / aspect); sy = Math.round((bitmap.height - sh) / 2); }
+    }
+    const scale = Math.min(1, maxWidth / sw);
+    const width = Math.round(sw * scale);
+    const height = Math.round(sh * scale);
     if (height > MAX_CANVAS_HEIGHT) {
       throw new Error(`الصورة أطول من اللازم (${height}px). قسّمها إلى أجزاء أقصر.`);
     }
@@ -23,7 +29,7 @@ export async function prepareImage(file: File, maxWidth: number, quality = 0.86)
     canvas.height = height;
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("canvas");
-    ctx.drawImage(bitmap, 0, 0, width, height);
+    ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, width, height);
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", quality));
     if (blob && blob.type === "image/webp") {
       return { blob, width, height, contentType: "image/webp" };

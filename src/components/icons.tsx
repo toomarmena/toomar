@@ -68,16 +68,14 @@ export const IconCheck = (p: P) => (
   </svg>
 );
 
-/** The verified mark: granted by the editor, never bought. */
-export function VerifiedMark({ className = "" }: { className?: string }) {
+/** The verified check: blue circle, white tick. Granted by the editor, never bought. */
+export function VerifiedMark({ className = "", size = 14, onDark = false }: { className?: string; size?: number; onDark?: boolean }) {
   return (
-    <span
-      className={`inline-flex items-center justify-center w-[14px] h-[14px] rounded-full bg-blue text-white shrink-0 ${className}`}
-      title="مبدع موثّق"
-      aria-label="مبدع موثّق"
-    >
-      <IconCheck width={9} height={9} strokeWidth={3.5} />
-    </span>
+    <svg width={size} height={size} viewBox="0 0 24 24" className={`inline-block shrink-0 align-[-2px] ${className}`} role="img" aria-label="مبدع موثّق">
+      <title>مبدع موثّق</title>
+      <circle cx="12" cy="12" r="11" fill={onDark ? "#FFFFFF" : "#2B5CF6"} />
+      <path d="M7 12.5l3 3 7-7" stroke={onDark ? "#2B5CF6" : "#FFFFFF"} strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 

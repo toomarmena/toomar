@@ -167,7 +167,7 @@ async function ensureSeries(creatorId) {
 
   const coverFile = listFiles(root, (f) => /^cover\.(jpe?g|png|webp)$/i.test(f))[0];
   if (coverFile && (!existing?.cover_key || force)) {
-    const buf = await sharp(join(root, coverFile)).rotate().resize({ width: 600, withoutEnlargement: true }).webp({ quality: 88 }).toBuffer();
+    const buf = await sharp(join(root, coverFile)).rotate().resize({ width: 600, height: 900, fit: "cover", position: "centre" }).webp({ quality: 88 }).toBuffer();
     const key = `series/${id}/cover-${Date.now()}.webp`;
     await put(key, buf, "image/webp");
     await db.from("series").update({ cover_key: key }).eq("id", id);

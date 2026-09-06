@@ -1,26 +1,29 @@
 /**
- * Portrait cover, 2:3. Shows a tinted placeholder with the first letter of
- * the title until a real cover is uploaded. Plain <img>: covers are already
- * resized on upload and served from R2 with long cache headers.
+ * Every cover is portrait 2:3 with a 2px ink border. Until a real cover is
+ * uploaded: coral ground with the first letter of the title in Reem Kufi.
  */
 export function Cover({
   src,
   title,
-  tint,
   priority = false,
+  shadow = false,
+  className = "",
 }: {
   src: string | null;
   title: string;
-  tint: string;
+  /** Kept for callers that pass a tint; the placeholder is always coral now. */
+  tint?: string;
   priority?: boolean;
+  shadow?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="relative aspect-[2/3] w-full overflow-hidden bg-surface" style={{ backgroundColor: src ? undefined : tint }}>
+    <div className={`cover-2-3 relative w-full frame bg-coral ${shadow ? "shadow-hard" : ""} ${className}`}>
       {src ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={src} alt="" loading={priority ? "eager" : "lazy"} decoding="async" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={src} alt="" loading={priority ? "eager" : "lazy"} decoding="async" />
       ) : (
-        <span className="absolute inset-0 flex items-center justify-center font-display text-[64px] text-ink/90" aria-hidden>
+        <span className="cover-letter absolute inset-0 flex items-center justify-center font-display text-ink leading-none" aria-hidden>
           {title.trim().charAt(0)}
         </span>
       )}

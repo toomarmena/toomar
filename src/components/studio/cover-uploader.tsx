@@ -19,7 +19,7 @@ export function CoverUploader({ seriesId, coverUrl, title, tint }: { seriesId: s
     setBusy(true);
     setError(null);
     try {
-      const img = await prepareImage(file, 600, 0.88);
+      const img = await prepareImage(file, 600, 0.88, 2 / 3);
       const { url, headers, key } = await presignCover(seriesId, img.contentType);
       await putToR2(url, headers, img.blob);
       await setCover(seriesId, key);

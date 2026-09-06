@@ -1,15 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Aref_Ruqaa, IBM_Plex_Sans_Arabic } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Reem_Kufi } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/shell";
 import { LangProvider } from "@/components/lang-provider";
 import { getLang } from "@/lib/lang-server";
 import { getProfile } from "@/lib/supabase/server";
 
-const display = Aref_Ruqaa({
+const display = Reem_Kufi({
   variable: "--font-display",
   subsets: ["arabic", "latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
