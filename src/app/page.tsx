@@ -1,78 +1,75 @@
-import Link from "next/link";
 import { Hero } from "@/components/home/hero";
+import { Button } from "@/components/ui/button";
 import { CoverCard } from "@/components/ui/cover-card";
-import { PosterBlock } from "@/components/ui/poster-block";
 import { SectionHeader } from "@/components/ui/section-header";
 import { WeekSchedule } from "@/components/week-schedule";
 import type { Lang } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
 import { cairoWeekday, listApproved, listPicks } from "@/lib/queries";
+import type { SeriesSummary } from "@/lib/types";
 
 /** Assembles the home sections. Runs on the server per request. */
 async function homeData(lang: Lang) {
-  const [all, picksRaw] = await Promise.all([listApproved({ lang }), listPicks(lang)]);
-  // The editor's picks, hand-ordered; until three are chosen, the newest series fill the row.
-  const picks = picksRaw.length >= 3 ? picksRaw : [...picksRaw, ...all.filter((s) => !picksRaw.some((p) => p.id === s.id))].slice(0, 3);
-  const running = all.filter((s) => s.runStatus === "ongoing");
-  return { picks, running, featured: picks[0] ?? null, today: cairoWeekday() };
+  const [all, picks] = await Promise.all([listApproved({ lang }), listPicks(lang)]);
+  return {
+    picks, // hand-ordered by the editor; never padded
+    running: all.filter((s) => s.runStatus === "ongoing"),
+    comics: all.filter((s) => s.kind === "comic").slice(0, 8),
+    novels: all.filter((s) => s.kind === "novel").slice(0, 8),
+    today: cairoWeekday(),
+  };
+}
+
+function Grid({ items, priority = false }: { items: SeriesSummary[]; priority?: boolean }) {
+  return (
+    <ul className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+      {items.map((s, i) => (
+        <li key={s.id}>
+          <CoverCard series={s} priority={priority && i < 4} />
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export default async function HomePage() {
   const { lang, d } = await getDict();
-  const { picks, running, featured, today } = await homeData(lang);
-  const pad = "px-5 md:px-16";
+  const { picks, running, comics, novels, today } = await homeData(lang);
 
   return (
     <div className="flex flex-col">
-      <Hero featured={featured} lang={lang} d={d} />
+      <Hero d={d} />
 
-      <section className={`pt-10 md:pt-12 flex flex-col gap-5 md:gap-[22px] ${pad}`}>
-        <div className="hidden md:block">
+      {picks.length > 0 && (
+        <section className="wrap section flex flex-col gap-6 md:gap-8">
           <SectionHeader title={d.home.picks} note={d.home.picksNote} />
-        </div>
-        <div className="md:hidden">
-          <SectionHeader title={d.home.picks} note={d.section.all} href="/comics" />
-        </div>
-        {picks.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted frame border-dashed">{d.home.empty}</p>
-        ) : (
-          <>
-            <ul className="md:hidden flex gap-5 overflow-x-auto no-scrollbar -mx-5 px-5 pt-1 pb-4">
-              {picks.map((s, i) => (
-                <li key={s.id} className="shrink-0">
-                  <CoverCard series={s} priority={i < 2} width={170} />
-                </li>
-              ))}
-            </ul>
-            <ul className="hidden md:grid grid-cols-3 gap-6">
-              {picks.slice(0, 3).map((s, i) => (
-                <li key={s.id}>
-                  <CoverCard series={s} priority={i < 3} />
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </section>
+          <Grid items={picks} priority />
+        </section>
+      )}
 
-      <section className={`pt-12 md:pt-14 flex flex-col gap-5 md:gap-[18px] ${pad}`}>
+      <section className="wrap section flex flex-col gap-6 md:gap-8">
         <SectionHeader title={d.home.schedule} />
         <WeekSchedule items={running} today={today} />
       </section>
 
-      <section className={`pt-14 md:pt-16 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 ${pad}`}>
-        <PosterBlock kind="comic" micro="WEB COMICS" title={d.nav.comics} text={d.section.comicsLead} href="/comics" />
-        <PosterBlock kind="novel" micro="NOVELS" title={d.nav.novels} text={d.section.novelsLead} href="/novels" />
+      <section className="wrap section flex flex-col gap-6 md:gap-8">
+        <SectionHeader title={d.nav.comics} note={d.section.all} href="/comics" />
+        {comics.length ? <Grid items={comics} /> : <p className="t-caption py-10 text-center">{d.home.empty}</p>}
       </section>
 
-      <section className="mt-16 md:mt-[72px] bg-yellow text-ink border-t-2 border-ink px-5 py-12 md:px-16 md:py-14 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
-        <div className="flex flex-col gap-2">
-          <span className="font-display text-[60px] md:text-[96px] leading-none">{d.home.toBeContinued}</span>
-          <span className="text-base md:text-lg font-semibold">{d.home.publishFirst}</span>
+      <section className="bg-paper-2">
+        <div className="wrap section flex flex-col gap-6 md:gap-8">
+          <SectionHeader title={d.nav.novels} note={d.section.all} href="/novels" />
+          {novels.length ? <Grid items={novels} /> : <p className="t-caption py-10 text-center">{d.home.empty}</p>}
         </div>
-        <Link href="/studio" className="self-start md:self-auto inline-flex items-center h-12 md:h-14 px-8 bg-ink text-white font-bold text-[17px] frame shadow-hard-white press">
+      </section>
+
+      <section className="wrap section flex flex-col items-center gap-3 text-center">
+        <span className="font-display text-[40px] leading-none">{d.home.toBeContinued}</span>
+        <span className="text-[15px] text-ink-2">{d.home.closingLine}</span>
+        <Button variant="link" href="/studio">
           {d.home.publishOn}
-        </Link>
+        </Button>
       </section>
     </div>
   );

@@ -4,14 +4,14 @@ import Link from "next/link";
 
 export type Segment = { key: string; label: string; href?: string; onSelect?: () => void };
 
-/** One 2px border around the group; the active segment is ink with white text. */
-export function SegmentedControl({ items, active, size = "md", shadow = false, label }: { items: Segment[]; active: string; size?: "sm" | "md"; shadow?: boolean; label?: string }) {
-  const pad = size === "sm" ? "px-3 h-9 text-[13px]" : "px-5 h-10 text-sm";
+/** Text tabs side by side: muted, the active one ink with a 2px ink underline. No box. */
+export function SegmentedControl({ items, active, label, size = "md" }: { items: Segment[]; active: string; label?: string; size?: "sm" | "md" }) {
+  const text = size === "sm" ? "text-[13px]" : "text-[15px]";
   return (
-    <div role="group" aria-label={label} className={`inline-flex frame bg-paper ${shadow ? "shadow-hard" : ""}`}>
+    <div role="group" aria-label={label} className={`inline-flex items-center gap-5 md:gap-6 ${text}`}>
       {items.map((it) => {
         const isActive = it.key === active;
-        const cls = `inline-flex items-center justify-center font-bold ${pad} ${isActive ? "bg-ink text-white" : "text-ink hover:bg-surface"}`;
+        const cls = `inline-flex items-center h-10 border-b-2 transition-colors ${isActive ? "text-ink border-ink font-bold" : "text-muted border-transparent hover:text-ink font-medium"}`;
         if (it.href) {
           return (
             <Link key={it.key} href={it.href} className={cls} aria-current={isActive ? "true" : undefined}>

@@ -73,8 +73,8 @@ export function VerifiedMark({ className = "", size = 14, onDark = false }: { cl
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" className={`inline-block shrink-0 align-[-2px] ${className}`} role="img" aria-label="مبدع موثّق">
       <title>مبدع موثّق</title>
-      <circle cx="12" cy="12" r="11" fill={onDark ? "#FFFFFF" : "#2B5CF6"} />
-      <path d="M7 12.5l3 3 7-7" stroke={onDark ? "#2B5CF6" : "#FFFFFF"} strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="11" fill={onDark ? "#FFFFFF" : "#111111"} />
+      <path d="M7 12.5l3 3 7-7" stroke={onDark ? "#111111" : "#FFFFFF"} strokeWidth="2.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

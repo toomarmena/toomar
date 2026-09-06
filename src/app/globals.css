@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
 /*
- * Toomar design tokens. Poster direction: the Arabic letter is the picture.
- * Sharp corners, 2px ink borders, hard shadows, white ground. Light theme only.
+ * Toomar design tokens. Quiet gallery: the interface disappears and the
+ * covers do the talking. White, air, one hairline, one calm accent.
  */
 @theme {
   --color-paper: #ffffff;
+  --color-paper-2: #fafafa;
   --color-ink: #111111;
   --color-ink-2: #55555c;
   --color-muted: #7a7a82;
   --color-hair: #e6e6ea;
-  --color-surface: #f5f5f7;
+  --color-placeholder: #e4e4e8;
   --color-blue: #2b5cf6;
-  --color-blue-deep: #1e44c2;
-  --color-yellow: #ffb800;
   --color-violet: #6b4de6;
-  --color-coral: #ff7a59;
+  /* Kept for older screens until they are restyled. */
+  --color-surface: #fafafa;
+  --color-blue-deep: #1e44c2;
 
   --font-display: var(--font-display), "Reem Kufi", sans-serif;
   --font-sans: var(--font-body), "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
@@ -40,168 +41,149 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-size: 16px;
+  font-weight: 400;
+  font-size: 15px;
   line-height: 1.7;
   overscroll-behavior-y: none;
 }
-
-@media (max-width: 767px) {
+@media (min-width: 768px) {
   body {
-    font-size: 15px;
+    font-size: 16px;
+    line-height: 1.75;
   }
 }
 
 /* ---- type ---- */
 .font-display {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 500;
   letter-spacing: 0; /* never track Arabic */
 }
 .t-h1 {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 62px;
-  line-height: 1;
+  font-weight: 500;
+  font-size: 34px;
+  line-height: 1.2;
 }
 .t-h2 {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 28px;
-  line-height: 1;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.25;
 }
 .t-series {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 18px;
-  line-height: 1.2;
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.3;
+}
+.t-caption {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-muted);
 }
 @media (min-width: 768px) {
   .t-h1 {
-    font-size: 150px;
+    font-size: 56px;
+    line-height: 1.15;
   }
   .t-h2 {
-    font-size: 44px;
+    font-size: 28px;
+    line-height: 1.2;
   }
   .t-series {
-    font-size: 26px;
+    font-size: 18px;
+  }
+  .t-caption {
+    font-size: 13px;
   }
 }
 /* Arabic label: emphasis by word spacing, never letter spacing. */
 .t-label {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--color-blue);
-  word-spacing: 0.3em;
-}
-.t-note {
-  font-size: 13px;
   color: var(--color-muted);
-  word-spacing: 0.25em;
+  word-spacing: 0.2em;
 }
 /* Latin micro-label only (TOOMAR, WEB COMICS, NOVELS). */
 .t-micro {
   font-size: 11px;
+  line-height: 1;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   font-family: var(--font-sans);
+  color: var(--color-muted);
 }
 
-/* ---- surfaces ---- */
-.frame {
-  border: 2px solid var(--color-ink);
-}
-.shadow-hard {
-  box-shadow: 4px 4px 0 var(--color-ink);
-}
-.shadow-hard-lg {
-  box-shadow: 6px 6px 0 var(--color-ink);
+/* ---- layout ---- */
+.wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 20px;
 }
 @media (min-width: 768px) {
-  .shadow-hard {
-    box-shadow: 6px 6px 0 var(--color-ink);
-  }
-  .shadow-hard-lg {
-    box-shadow: 8px 8px 0 var(--color-ink);
+  .wrap {
+    padding-inline: 40px;
   }
 }
-.shadow-hard-yellow {
-  box-shadow: 4px 4px 0 var(--color-yellow);
-}
-.shadow-hard-white {
-  box-shadow: 4px 4px 0 var(--color-paper);
-}
-.shadow-hard-violet {
-  box-shadow: 4px 4px 0 var(--color-violet);
+.section {
+  padding-block: 56px;
 }
 @media (min-width: 768px) {
-  .shadow-hard-yellow {
-    box-shadow: 6px 6px 0 var(--color-yellow);
-  }
-  .shadow-hard-white {
-    box-shadow: 6px 6px 0 var(--color-paper);
-  }
-  .shadow-hard-violet {
-    box-shadow: 8px 8px 0 var(--color-violet);
+  .section {
+    padding-block: 96px;
   }
 }
 
-/* Pressable: lifts on hover, sinks on press. */
-.press {
-  transition:
-    transform 120ms ease,
-    box-shadow 120ms ease;
-}
-@media (hover: hover) {
-  .press:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 var(--color-ink);
-  }
-  .press.shadow-hard-lg:hover {
-    box-shadow: 8px 8px 0 var(--color-ink);
-  }
-  .press.shadow-hard-white:hover {
-    box-shadow: 6px 6px 0 var(--color-paper);
-  }
-  .press.shadow-hard-violet:hover {
-    box-shadow: 10px 10px 0 var(--color-violet);
-  }
-  .press.shadow-hard-yellow:hover {
-    box-shadow: 6px 6px 0 var(--color-yellow);
-  }
-  @media (min-width: 768px) {
-    .press:hover {
-      box-shadow: 8px 8px 0 var(--color-ink);
-    }
-    .press.shadow-hard-lg:hover {
-      box-shadow: 10px 10px 0 var(--color-ink);
-    }
-    .press.shadow-hard-white:hover {
-      box-shadow: 8px 8px 0 var(--color-paper);
-    }
-    .press.shadow-hard-yellow:hover {
-      box-shadow: 8px 8px 0 var(--color-yellow);
-    }
-  }
-}
-.press:active {
-  transform: translate(4px, 4px);
-  box-shadow: 0 0 0 var(--color-ink);
-}
-
-/* Every cover is portrait 2:3. The reading strip is exempt. */
+/* ---- covers: always portrait 2:3, no border, no shadow ---- */
 .cover-2-3 {
   aspect-ratio: 2 / 3;
   overflow: hidden;
-  container-type: inline-size;
-}
-.cover-letter {
-  font-size: 48cqw;
+  background: var(--color-placeholder);
 }
 .cover-2-3 > img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.cover-hover {
+  transition: opacity 150ms ease;
+}
+@media (hover: hover) {
+  .cover-hover:hover {
+    opacity: 0.85;
+  }
+}
+
+/* ---- the one text link ---- */
+.t-link {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: color 150ms ease;
+}
+.t-link:hover {
+  color: var(--color-blue);
+}
+
+/* ---- inputs ---- */
+.field {
+  height: 48px;
+  padding-inline: 14px;
+  border: 1px solid var(--color-hair);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  width: 100%;
+}
+.field:focus {
+  outline: none;
+  border-color: var(--color-blue);
+}
+textarea.field {
+  height: auto;
+  padding-block: 12px;
 }
 
 .no-scrollbar {

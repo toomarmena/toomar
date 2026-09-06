@@ -1,17 +1,17 @@
 import Link from "next/link";
 
-/** Reem Kufi title on one side, a muted note or link on the other. */
+/** h2 on the right, a muted caption or text link on the left, one hairline under both. */
 export function SectionHeader({ title, note, href, as: Tag = "h2" }: { title: string; note?: string; href?: string; as?: "h1" | "h2" }) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
+    <div className="flex items-baseline justify-between gap-4 pb-4 md:pb-5 border-b border-hair">
       <Tag className="t-h2">{title}</Tag>
       {note &&
         (href ? (
-          <Link href={href} className="t-note hover:text-ink shrink-0">
+          <Link href={href} className="t-link t-caption text-ink shrink-0">
             {note} ←
           </Link>
         ) : (
-          <span className="t-note shrink-0">{note}</span>
+          <span className="t-caption shrink-0">{note}</span>
         ))}
     </div>
   );

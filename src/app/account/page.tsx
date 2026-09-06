@@ -62,7 +62,7 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
           {d.nav.library}
         </Link>
         {profile.role === "admin" && (
-          <Link href="/admin" className="px-5 py-2.5 text-sm font-semibold bg-yellow text-ink">
+          <Link href="/admin" className="px-5 py-2.5 text-sm font-semibold border border-hair text-ink hover:border-ink">
             {d.nav.admin}
           </Link>
         )}

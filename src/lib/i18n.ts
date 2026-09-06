@@ -7,7 +7,7 @@ export type Lang = "ar" | "en";
 export const ar = {
   siteName: "طومار",
   tagline: "قصص عربية، حلقةً بعد حلقة.",
-  nav: { home: "الرئيسية", comics: "قصص مصوّرة", novels: "روايات", library: "مكتبتي", account: "حسابي", search: "بحث", publish: "انشر عملك", signIn: "تسجيل الدخول", searchPlaceholder: "ابحث عن قصة أو فنان", admin: "لوحة التحرير", studio: "لوحة المبدع", publishShort: "انشر" },
+  nav: { home: "الرئيسية", comics: "قصص مصوّرة", novels: "روايات", library: "مكتبتي", account: "حسابي", search: "بحث", publish: "انشر عملك", signIn: "تسجيل الدخول", searchPlaceholder: "ابحث عن قصة أو فنان", admin: "لوحة التحرير", studio: "لوحة المبدع", publishShort: "انشر", enter: "دخول" },
   home: {
     eyebrow: "منصة عربية للقصص المصوّرة والروايات",
     h1a: "لدينا",
@@ -28,6 +28,7 @@ export const ar = {
     byGenre: "تصفّح حسب النوع",
     toBeContinued: "يُتبع…",
     publishFirst: "لديك قصة؟ انشرها اليوم.",
+    closingLine: "لديك قصة تُروى في حلقات؟",
     publishOn: "انشر على طومار",
     empty: "لا شيء هنا بعد.",
     nothingOn: "لا شيء يوم {day}.",
@@ -223,7 +224,7 @@ export type Dict = typeof ar;
 export const en: Dict = {
   siteName: "Toomar",
   tagline: "Arabic stories, one episode at a time.",
-  nav: { home: "Home", comics: "Web Comics", novels: "Novels", library: "Library", account: "Account", search: "Search", publish: "Publish", signIn: "Sign in", searchPlaceholder: "Search stories or artists", admin: "Editor's desk", studio: "Creator studio", publishShort: "Publish" },
+  nav: { home: "Home", comics: "Web Comics", novels: "Novels", library: "Library", account: "Account", search: "Search", publish: "Publish", signIn: "Sign in", searchPlaceholder: "Search stories or artists", admin: "Editor's desk", studio: "Creator studio", publishShort: "Publish", enter: "Sign in" },
   home: {
     eyebrow: "An Arabic platform for web comics and novels",
     h1a: "لدينا",
@@ -244,6 +245,7 @@ export const en: Dict = {
     byGenre: "Browse by genre",
     toBeContinued: "To be continued…",
     publishFirst: "Have a story? Publish it today.",
+    closingLine: "Have a story told in episodes?",
     publishOn: "Publish on Toomar",
     empty: "Nothing here yet.",
     nothingOn: "Nothing on {day}.",

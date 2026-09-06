@@ -31,71 +31,65 @@ export function Shell({ children, signedIn, role }: { children: ReactNode; signe
 
   return (
     <>
-      {/* DesktopNav */}
-      <header className="border-b-2 border-ink bg-paper">
-        <div className="mx-auto max-w-[1440px] flex items-center justify-between gap-6 px-5 py-4 md:px-16 md:py-5">
-          <div className="flex items-center gap-10">
-            <Wordmark />
-            <div className="hidden md:block">
-              <SegmentedControl
-                label={d.nav.home}
-                active={section}
-                items={[
-                  { key: "comics", label: d.nav.comics, href: "/comics" },
-                  { key: "novels", label: d.nav.novels, href: "/novels" },
-                ]}
-              />
-            </div>
+      {/* DesktopNav: 64px, hairline under it. */}
+      <header className="border-b border-hair bg-paper">
+        <div className="wrap h-16 flex items-center justify-between gap-6">
+          <Wordmark />
+          <div className="hidden md:block">
+            <SegmentedControl
+              label={d.nav.home}
+              active={section}
+              items={[
+                { key: "comics", label: d.nav.comics, href: "/comics" },
+                { key: "novels", label: d.nav.novels, href: "/novels" },
+              ]}
+            />
           </div>
-          <div className="hidden md:flex items-center gap-[22px]">
-            <Link href="/search" className="flex items-center gap-2.5 w-[240px] px-3.5 h-11 frame text-muted text-sm hover:text-ink">
-              <IconSearch width={18} height={18} strokeWidth={2.2} className="text-ink" />
-              <span>{d.nav.search}</span>
-            </Link>
-            <Link href="/library" className="text-sm font-semibold text-ink hover:text-blue">
-              {d.nav.library}
+          <div className="hidden md:flex items-center gap-6">
+            <Link href="/search" className="text-ink-2 hover:text-blue transition-colors" aria-label={d.nav.search}>
+              <IconSearch width={20} height={20} strokeWidth={1.75} />
             </Link>
             {role === "admin" && (
-              <Link href="/admin" className="text-sm font-semibold text-ink hover:text-blue">
+              <Link href="/admin" className="t-link text-[14px]">
                 {d.nav.admin}
               </Link>
             )}
-            <Link href="/account" className="text-sm font-semibold text-ink hover:text-blue">
-              {signedIn ? d.nav.account : d.nav.signIn}
+            <Link href="/studio" className="t-link text-[14px]">
+              {d.home.haveStory}
             </Link>
-            <Button href="/studio" variant="secondary" size="md" className="h-11 px-5 text-sm">
-              {d.nav.publish}
+            <Button href={signedIn ? "/account" : "/account"} variant="secondary" className="h-10 px-5 text-[14px]">
+              {signedIn ? d.nav.account : d.nav.enter}
             </Button>
           </div>
-          <div className="md:hidden flex items-center gap-3.5">
-            <Link href="/search" className="p-1 text-ink" aria-label={d.nav.search}>
-              <IconSearch width={22} height={22} strokeWidth={2.2} />
-            </Link>
-            <Link href="/studio" className="inline-flex items-center h-8 px-3 text-[12px] font-bold bg-yellow frame press shadow-[3px_3px_0_#111111]">
-              {d.nav.publishShort}
-            </Link>
-          </div>
+          <Link href="/search" className="md:hidden p-1 text-ink-2" aria-label={d.nav.search}>
+            <IconSearch width={22} height={22} strokeWidth={1.75} />
+          </Link>
         </div>
       </header>
 
-      <main className="flex-1 pb-[96px] md:pb-0">{children}</main>
+      <main className="flex-1 pb-[88px] md:pb-0">{children}</main>
 
-      <footer className="hidden md:block border-t-2 border-ink">
-        <div className="mx-auto max-w-[1440px] px-16 py-8 flex items-center justify-between text-sm text-muted">
-          <Wordmark size="sm" />
-          <span>{d.tagline}</span>
+      {/* Footer: hairline, micro-labels only. */}
+      <footer className="hidden md:block border-t border-hair">
+        <div className="wrap py-8 flex items-center justify-between">
+          <span className="t-micro" dir="ltr">
+            toomar
+          </span>
+          <span className="t-micro" dir="ltr">
+            web comics · novels
+          </span>
         </div>
       </footer>
 
       {/* MobileTabBar */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-paper border-t-2 border-ink pb-safe" aria-label={d.nav.home}>
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-paper border-t border-hair pb-safe" aria-label={d.nav.home}>
         <ul className="grid grid-cols-5 px-1.5 pt-2.5 pb-2">
           {tabs.map(({ href, label, Icon }) => {
             const active = isActive(pathname, href);
             return (
               <li key={href}>
-                <Link href={href} className={`flex flex-col items-center gap-1 text-[10.5px] ${active ? "text-blue font-bold" : "text-ink-2 font-semibold"}`} aria-current={active ? "page" : undefined}>
-                  <Icon width={22} height={22} strokeWidth={2.2} />
+                <Link href={href} className={`flex flex-col items-center gap-1 text-[10.5px] ${active ? "text-blue font-bold" : "text-ink-2 font-medium"}`} aria-current={active ? "page" : undefined}>
+                  <Icon width={22} height={22} strokeWidth={1.75} />
                   <span>{label}</span>
                 </Link>
               </li>

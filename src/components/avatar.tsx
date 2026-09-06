@@ -1,13 +1,9 @@
-/** A creator's picture: a square with the 2px border, or the first letter on coral. */
-export function Avatar({ src, name, size = 56 }: { src: string | null; name: string; size?: number }) {
-  const style = { width: size, height: size, fontSize: Math.round(size * 0.5) };
+/** A creator's picture: a square on the placeholder grey. No border, no shadow. */
+export function Avatar({ src, size = 56 }: { src: string | null; name?: string; size?: number }) {
+  const style = { width: size, height: size };
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" width={size} height={size} className="frame object-cover shrink-0 bg-surface" style={style} />;
+    return <img src={src} alt="" width={size} height={size} className="object-cover shrink-0 bg-placeholder" style={style} />;
   }
-  return (
-    <span className="frame bg-coral text-ink flex items-center justify-center font-display leading-none shrink-0" style={style} aria-hidden>
-      {name.trim().charAt(0)}
-    </span>
-  );
+  return <span className="bg-placeholder shrink-0 block" style={style} aria-hidden />;
 }
