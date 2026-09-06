@@ -41,3 +41,19 @@ export function CoverCard({ series, priority = false, compact = false }: { serie
     </Link>
   );
 }
+
+/** The grid used everywhere: two across on phones, four on desktop. */
+export function CoverGrid({ items, empty, priority = false, cols = 4 }: { items: SeriesSummary[]; empty?: string; priority?: boolean; cols?: 4 | 6 }) {
+  if (items.length === 0) {
+    return empty ? <p className="t-caption py-10 text-center">{empty}</p> : null;
+  }
+  return (
+    <ul className={`grid grid-cols-2 gap-3 md:gap-6 ${cols === 6 ? "md:grid-cols-6" : "md:grid-cols-4"}`}>
+      {items.map((s, i) => (
+        <li key={s.id}>
+          <CoverCard series={s} priority={priority && i < 4} />
+        </li>
+      ))}
+    </ul>
+  );
+}

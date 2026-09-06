@@ -108,7 +108,9 @@ export const ar = {
     editProfile: "تعديل الملف العام",
     errors: { auth: "تعذّر تسجيل الدخول. حاول مرة أخرى.", invalid: "البريد أو كلمة المرور غير صحيحة.", weak: "كلمة المرور قصيرة: ستة أحرف على الأقل.", exists: "هذا البريد مسجّل بالفعل.", generic: "حدث خطأ. حاول مرة أخرى." },
     welcome: "مرحباً بك في طومار.",
+    checkInbox: "تحقّق من بريدك لتأكيد الحساب.",
   },
+  notFound: { title: "لا شيء هنا.", lead: "الصفحة التي تبحث عنها غير موجودة.", home: "الصفحة الرئيسية" },
   search: { title: "بحث", placeholder: "اسم قصة أو فنان", empty: "لا نتائج.", hint: "اكتب اسم قصة أو فنان." },
   studio: {
     title: "لوحة المبدع",
@@ -329,7 +331,9 @@ export const en: Dict = {
     editProfile: "Edit public profile",
     errors: { auth: "Sign-in failed. Please try again.", invalid: "Wrong email or password.", weak: "Password too short: at least six characters.", exists: "This email is already registered.", generic: "Something went wrong. Please try again." },
     welcome: "Welcome to Toomar.",
+    checkInbox: "Check your inbox to confirm the account.",
   },
+  notFound: { title: "Nothing here.", lead: "The page you are looking for does not exist.", home: "Home" },
   search: { title: "Search", placeholder: "Story or artist name", empty: "No results.", hint: "Type a story or artist name." },
   studio: {
     title: "Creator studio",

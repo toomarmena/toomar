@@ -6,21 +6,10 @@ import { presignAvatar, setAvatar } from "@/app/studio/actions";
 import { prepareImage, putToR2 } from "@/lib/image-client";
 import { Avatar } from "../avatar";
 import { useT } from "../lang-provider";
+import { Button } from "../ui/button";
 
 /** Square-crops the picture in the browser, then uploads it straight to R2. */
-async function squareCrop(file: File): Promise<File> {
-  const bitmap = await createImageBitmap(file);
-  const side = Math.min(bitmap.width, bitmap.height);
-  const canvas = document.createElement("canvas");
-  canvas.width = side;
-  canvas.height = side;
-  canvas.getContext("2d")!.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, side, side);
-  bitmap.close();
-  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
-  return new File([blob!], "avatar.png", { type: "image/png" });
-}
-
-export function AvatarUploader({ src, name }: { src: string | null; name: string }) {
+export function AvatarUploader({ src }: { src: string | null; name?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -32,7 +21,7 @@ export function AvatarUploader({ src, name }: { src: string | null; name: string
     setBusy(true);
     setError(null);
     try {
-      const img = await prepareImage(await squareCrop(file), 400, 0.88);
+      const img = await prepareImage(file, 400, 0.88, 1);
       const { url, headers, key } = await presignAvatar(img.contentType);
       await putToR2(url, headers, img.blob);
       await setAvatar(key);
@@ -47,15 +36,15 @@ export function AvatarUploader({ src, name }: { src: string | null; name: string
 
   return (
     <div className="flex items-center gap-4">
-      <Avatar src={src} name={name} size={88} />
+      <Avatar src={src} size={80} />
       <div className="flex flex-col gap-1.5">
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-        <button type="button" disabled={busy} onClick={() => fileRef.current?.click()} className="h-10 px-4 border-[1.5px] border-ink text-sm font-semibold text-ink hover:bg-ink hover:text-white disabled:opacity-60">
+        <Button variant="secondary" disabled={busy} onClick={() => fileRef.current?.click()} className="h-10 px-4 text-[14px] self-start">
           {busy ? d.common.loading : d.studio.profile.uploadAvatar}
-        </button>
-        <span className="text-[11px] text-muted">{d.studio.profile.avatarHint}</span>
+        </Button>
+        <span className="t-caption">{d.studio.profile.avatarHint}</span>
         {error && (
-          <span role="alert" className="text-xs text-[#B3261E]">
+          <span role="alert" className="t-caption text-ink">
             {error}
           </span>
         )}

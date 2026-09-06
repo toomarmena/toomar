@@ -6,6 +6,7 @@ import { prepareImage, putToR2, sortFilesNaturally } from "@/lib/image-client";
 import { fill } from "@/lib/i18n";
 import type { EpisodeImage } from "@/lib/types";
 import { useT } from "../lang-provider";
+import { Button } from "../ui/button";
 
 /** Upload, reorder and remove the images of a comic episode. */
 export function ImageEditor({ episodeId, initial, publicBase }: { episodeId: string; initial: EpisodeImage[]; publicBase: string }) {
@@ -52,40 +53,42 @@ export function ImageEditor({ episodeId, initial, publicBase }: { episodeId: str
     await deleteImage(id).catch(() => setError(d.studio.errors.generic));
   };
 
+  const small = "t-link t-caption text-ink disabled:opacity-40 disabled:no-underline";
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => onFiles(e.target.files)} />
-        <button type="button" disabled={!!progress} onClick={() => fileRef.current?.click()} className="px-5 h-11 bg-blue text-white text-sm font-bold hover:bg-blue-deep disabled:opacity-60">
+        <Button variant="primary" disabled={!!progress} onClick={() => fileRef.current?.click()} className="h-10 px-5 text-[14px]">
           {progress ? fill(d.studio.uploading, progress) : d.studio.addImages}
-        </button>
-        <span className="text-xs text-muted">{d.studio.imagesHint}</span>
+        </Button>
+        <span className="t-caption">{d.studio.imagesHint}</span>
       </div>
       {error && (
-        <p role="alert" className="text-sm text-[#B3261E]">
+        <p role="alert" className="t-caption text-ink">
           {error}
         </p>
       )}
       {images.length > 0 && (
-        <ol className="flex flex-col gap-2">
+        <ol className="divide-y divide-hair border-y border-hair">
           {images.map((img, i) => (
-            <li key={img.id} className="flex items-center gap-3 p-2 bg-surface border border-hair">
-              <span className="w-8 text-center font-display text-lg">{i + 1}</span>
-              <div className="w-[72px] h-[72px] overflow-hidden bg-white border border-hair shrink-0">
+            <li key={img.id} className="flex items-center gap-4 py-2.5">
+              <span className="w-6 t-caption text-ink">{i + 1}</span>
+              <div className="w-14 h-14 overflow-hidden bg-placeholder shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img.url} alt="" className="w-full h-full object-cover object-top" loading="lazy" />
               </div>
-              <span className="text-xs text-muted flex-1" dir="ltr">
+              <span className="t-caption flex-1" dir="ltr">
                 {img.width} × {img.height}
               </span>
-              <div className="flex gap-1">
-                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="h-9 px-3 text-xs font-semibold border border-hair bg-white disabled:opacity-40">
-                  ↑ {d.studio.moveUp}
+              <div className="flex gap-4">
+                <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className={small}>
+                  {d.studio.moveUp}
                 </button>
-                <button type="button" onClick={() => move(i, 1)} disabled={i === images.length - 1} className="h-9 px-3 text-xs font-semibold border border-hair bg-white disabled:opacity-40">
-                  ↓ {d.studio.moveDown}
+                <button type="button" onClick={() => move(i, 1)} disabled={i === images.length - 1} className={small}>
+                  {d.studio.moveDown}
                 </button>
-                <button type="button" onClick={() => remove(img.id)} className="h-9 px-3 text-xs font-semibold border border-hair bg-white text-[#B3261E]">
+                <button type="button" onClick={() => remove(img.id)} className={small}>
                   {d.studio.remove}
                 </button>
               </div>

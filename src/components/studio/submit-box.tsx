@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { submitSeries, withdrawSeries } from "@/app/studio/actions";
 import { useT } from "../lang-provider";
+import { Button } from "../ui/button";
 
 export function SubmitBox({ seriesId, status, note }: { seriesId: string; status: "draft" | "pending" | "approved" | "rejected"; note: string | null }) {
   const [pending, start] = useTransition();
@@ -11,27 +12,26 @@ export function SubmitBox({ seriesId, status, note }: { seriesId: string; status
   const router = useRouter();
   const d = useT();
 
-  const tone = { draft: "bg-surface", pending: "bg-[#FFF6D6]", approved: "bg-[#E8F5EC]", rejected: "bg-[#FDECEC]" }[status];
-
   return (
-    <div className={`flex flex-col gap-3 p-4 border border-hair ${tone}`}>
-      <span className="text-sm font-semibold">{d.studio.status[status]}</span>
+    <div className="flex flex-col gap-3 py-4 border-y border-hair">
+      <span className="t-caption text-ink">{d.studio.status[status]}</span>
       {status === "rejected" && note && (
-        <p className="text-sm text-ink-2">
-          <span className="text-muted">{d.studio.rejectedNote}:</span> {note}
+        <p className="text-[15px] text-ink-2">
+          <span className="t-caption">{d.studio.rejectedNote}:</span> {note}
         </p>
       )}
       {(status === "draft" || status === "rejected") && (
         <>
-          <p className="text-xs text-muted">{d.studio.submitHint}</p>
+          <p className="t-caption">{d.studio.submitHint}</p>
           {error && (
-            <p role="alert" className="text-sm text-[#B3261E]">
+            <p role="alert" className="t-caption text-ink">
               {d.studio.errors[error]}
             </p>
           )}
-          <button
-            type="button"
+          <Button
+            variant="primary"
             disabled={pending}
+            className="self-start h-10 px-5 text-[14px]"
             onClick={() =>
               start(async () => {
                 const r = await submitSeries(seriesId);
@@ -41,26 +41,25 @@ export function SubmitBox({ seriesId, status, note }: { seriesId: string; status
                 } else setError(r);
               })
             }
-            className="self-start px-5 h-11 bg-ink text-white text-sm font-bold disabled:opacity-60"
           >
             {d.studio.submit}
-          </button>
+          </Button>
         </>
       )}
       {status === "pending" && (
-        <button
-          type="button"
+        <Button
+          variant="secondary"
           disabled={pending}
+          className="self-start h-10 px-5 text-[14px]"
           onClick={() =>
             start(async () => {
               await withdrawSeries(seriesId);
               router.refresh();
             })
           }
-          className="self-start px-5 h-11 border-[1.5px] border-ink text-sm font-bold disabled:opacity-60"
         >
           {d.studio.withdraw}
-        </button>
+        </Button>
       )}
     </div>
   );

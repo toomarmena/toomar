@@ -13,6 +13,7 @@ export function PicksEditor({ picks, candidates }: { picks: Item[]; candidates: 
   const [saved, setSaved] = useState(false);
   const d = useT();
   const pool = candidates.filter((c) => !list.some((p) => p.id === c.id));
+  const small = "t-link t-caption text-ink disabled:opacity-40 disabled:no-underline";
 
   const commit = (next: Item[]) => {
     setList(next);
@@ -31,33 +32,35 @@ export function PicksEditor({ picks, candidates }: { picks: Item[]; candidates: 
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      {list.length === 0 && <p className="text-sm text-muted">{d.common.none}</p>}
-      <ol className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
+      {list.length === 0 && <p className="t-caption">{d.common.none}</p>}
+      <ol className="divide-y divide-hair border-y border-hair">
         {list.map((p, i) => (
-          <li key={p.id} className="flex items-center gap-3 p-2.5 bg-surface border border-hair">
-            <span className="font-display text-xl w-8 text-center">{i + 1}</span>
+          <li key={p.id} className="flex items-center gap-4 py-3">
+            <span className="w-6 t-caption text-ink">{i + 1}</span>
             <span className="flex-1 min-w-0 flex flex-col">
-              <span className="font-semibold truncate">{p.title}</span>
-              <span className="text-xs text-muted">{p.creator}</span>
+              <span className="text-[15px] truncate">{p.title}</span>
+              <span className="t-caption">{p.creator}</span>
             </span>
-            <button type="button" onClick={() => move(i, -1)} disabled={i === 0 || pending} className="h-9 px-3 text-xs font-semibold border border-hair bg-white disabled:opacity-40">
-              ↑
-            </button>
-            <button type="button" onClick={() => move(i, 1)} disabled={i === list.length - 1 || pending} className="h-9 px-3 text-xs font-semibold border border-hair bg-white disabled:opacity-40">
-              ↓
-            </button>
-            <button type="button" onClick={() => commit(list.filter((x) => x.id !== p.id))} disabled={pending} className="h-9 px-3 text-xs font-semibold border border-hair bg-white text-[#B3261E]">
-              {d.admin.removePick}
-            </button>
+            <div className="flex gap-4">
+              <button type="button" onClick={() => move(i, -1)} disabled={i === 0 || pending} className={small}>
+                {d.studio.moveUp}
+              </button>
+              <button type="button" onClick={() => move(i, 1)} disabled={i === list.length - 1 || pending} className={small}>
+                {d.studio.moveDown}
+              </button>
+              <button type="button" onClick={() => commit(list.filter((x) => x.id !== p.id))} disabled={pending} className={small}>
+                {d.admin.removePick}
+              </button>
+            </div>
           </li>
         ))}
       </ol>
       {pool.length > 0 && (
-        <label className="flex items-center gap-3 text-sm font-semibold">
+        <label className="flex flex-col gap-1.5 t-caption text-ink max-w-[420px]">
           {d.admin.addPick}
           <select
-            className="h-10 px-3 border border-hair bg-white font-normal"
+            className="field h-11 text-[15px]"
             value=""
             disabled={pending}
             onChange={(e) => {
@@ -74,7 +77,7 @@ export function PicksEditor({ picks, candidates }: { picks: Item[]; candidates: 
           </select>
         </label>
       )}
-      {saved && <span className="text-xs text-[#0E7C4A]">{d.studio.saved}</span>}
+      {saved && <span className="t-caption">{d.studio.saved}</span>}
     </div>
   );
 }

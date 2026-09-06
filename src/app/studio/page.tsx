@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Cover } from "@/components/cover";
+import { Button } from "@/components/ui/button";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
-import { tintFor } from "@/lib/queries";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { SeriesRow } from "@/lib/types";
 
@@ -14,12 +14,12 @@ export default async function StudioPage() {
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 md:px-12 pt-8 md:pt-16 flex flex-col items-center gap-4 text-center">
-        <h1 className="font-display text-[34px] leading-tight">{d.studio.title}</h1>
+      <div className="wrap pt-16 md:pt-24 section-end flex flex-col items-start gap-5 max-w-[720px]">
+        <h1 className="t-h1">{d.studio.title}</h1>
         <p className="text-ink-2">{d.studio.signIn}</p>
-        <Link href="/account?next=/studio" className="px-6 h-12 inline-flex items-center bg-blue text-white font-bold">
+        <Button href="/account?next=/studio" variant="primary">
           {d.account.signIn}
-        </Link>
+        </Button>
       </div>
     );
   }
@@ -32,27 +32,28 @@ export default async function StudioPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
-          <h1 className="font-display text-[34px] leading-tight">{d.studio.title}</h1>
-          <p className="text-sm text-ink-2">{d.studio.lead}</p>
+          <h1 className="t-h2">{d.studio.title}</h1>
+          <p className="t-caption">{d.studio.lead}</p>
         </div>
-        <Link href="/studio/new" className="px-5 h-11 inline-flex items-center bg-blue text-white text-sm font-bold hover:bg-blue-deep shrink-0">
+        <Button href="/studio/new" variant="secondary" className="h-10 px-5 text-[14px] shrink-0">
           {d.studio.newSeries}
-        </Link>
+        </Button>
       </div>
       {list.length === 0 ? (
-        <p className="py-12 text-center text-sm text-muted border border-dashed border-hair">{d.studio.noSeries}</p>
+        <p className="t-caption py-10">{d.studio.noSeries}</p>
       ) : (
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <ul className="divide-y divide-hair border-y border-hair">
           {list.map((s) => (
             <li key={s.id}>
-              <Link href={`/studio/${s.id}`} className="flex items-center gap-4 p-3 bg-surface border border-hair hover:border-ink">
-                <div className="w-[64px] shrink-0">
-                  <Cover src={mediaUrl(s.cover_key)} title={s.title_ar} tint={tintFor(s.id)} />
+              <Link href={`/studio/${s.id}`} className="flex items-center gap-4 py-3 group">
+                <div className="w-10 shrink-0">
+                  <Cover src={mediaUrl(s.cover_key)} />
                 </div>
-                <div className="flex flex-col gap-1 min-w-0">
-                  <span className="font-semibold truncate">{s.title_ar}</span>
-                  <span className="text-xs text-muted">{s.kind === "comic" ? d.studio.comic : d.studio.novel}</span>
-                  <span className="text-xs font-semibold">{d.studio.status[s.status]}</span>
+                <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                  <span className="t-series truncate group-hover:text-blue transition-colors">{s.title_ar}</span>
+                  <span className="t-caption">
+                    {s.kind === "comic" ? d.studio.comic : d.studio.novel} · {d.studio.status[s.status]}
+                  </span>
                 </div>
               </Link>
             </li>

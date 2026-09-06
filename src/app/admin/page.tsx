@@ -5,12 +5,12 @@ import { VerifiedMark } from "@/components/icons";
 import { PicksEditor } from "@/components/admin/picks-editor";
 import { StorageSetup } from "@/components/admin/storage-setup";
 import { ConfirmButton } from "@/components/studio/confirm-button";
+import { Button } from "@/components/ui/button";
+import { AGE_RATING, RUN_STATUS } from "@/lib/constants";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
-import { tintFor } from "@/lib/queries";
 import { createClient, getProfile } from "@/lib/supabase/server";
 import type { SeriesRow } from "@/lib/types";
-import { AGE_RATING, RUN_STATUS } from "@/lib/constants";
 import { approveSeries, hideSeries, rejectSeries, setVerified } from "./actions";
 
 export const metadata = { title: "لوحة التحرير" };
@@ -18,12 +18,14 @@ export const metadata = { title: "لوحة التحرير" };
 type Row = SeriesRow & { profiles: { display_name: string; is_verified: boolean } | null; episodes: { count: number }[] };
 type Person = { id: string; display_name: string; role: string; is_verified: boolean; created_at: string };
 
+const h2 = "t-h2 pb-4 border-b border-hair";
+
 export default async function AdminPage() {
   const profile = await getProfile().catch(() => null);
   if (!profile) redirect("/account?next=/admin");
   const { d } = await getDict();
   if (profile.role !== "admin") {
-    return <p className="mx-auto max-w-[1100px] px-4 md:px-12 pt-12 text-ink-2">{d.admin.notAdmin}</p>;
+    return <p className="wrap pt-16 text-ink-2">{d.admin.notAdmin}</p>;
   }
 
   const supabase = await createClient();
@@ -38,48 +40,48 @@ export default async function AdminPage() {
   const toItem = (s: Row) => ({ id: s.id, title: s.title_ar, creator: s.profiles?.display_name ?? "" });
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-12 pt-6 md:pt-12 flex flex-col gap-12">
-      <h1 className="font-display text-[34px] leading-tight">{d.admin.title}</h1>
+    <div className="wrap pt-10 md:pt-16 section-end flex flex-col gap-12 md:gap-16 max-w-[960px]">
+      <h1 className="t-h1">{d.admin.title}</h1>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-[28px] leading-tight">
-          {d.admin.pending} <span className="text-muted text-lg font-sans">({pending.length})</span>
+        <h2 className={h2}>
+          {d.admin.pending} <span className="t-caption">({pending.length})</span>
         </h2>
         {pending.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted border border-dashed border-hair">{d.admin.noPending}</p>
+          <p className="t-caption py-6">{d.admin.noPending}</p>
         ) : (
-          <ul className="flex flex-col gap-3">
+          <ul className="divide-y divide-hair">
             {pending.map((s) => (
-              <li key={s.id} className="flex flex-col md:flex-row gap-4 p-4 bg-surface border border-hair">
-                <div className="w-[80px] shrink-0">
-                  <Cover src={mediaUrl(s.cover_key)} title={s.title_ar} tint={tintFor(s.id)} />
+              <li key={s.id} className="flex flex-col md:flex-row gap-5 py-6">
+                <div className="w-20 shrink-0">
+                  <Cover src={mediaUrl(s.cover_key)} />
                 </div>
                 <div className="flex-1 flex flex-col gap-1.5 min-w-0">
-                  <span className="font-semibold text-lg">{s.title_ar}</span>
-                  <span className="flex items-center gap-1.5 text-sm text-ink-2">
+                  <span className="t-series">{s.title_ar}</span>
+                  <span className="t-caption flex items-center gap-1">
                     {s.profiles?.display_name}
-                    {s.profiles?.is_verified && <VerifiedMark />}
+                    {s.profiles?.is_verified && <VerifiedMark size={12} />}
                   </span>
-                  <span className="text-xs text-muted">
+                  <span className="t-caption">
                     {s.kind === "comic" ? d.studio.comic : d.studio.novel} · {RUN_STATUS.find((r) => r.key === s.run_status)?.ar} · {AGE_RATING.find((r) => r.key === s.age_rating)?.ar} · {s.episodes?.[0]?.count ?? 0} · {d.admin.submittedAt}{" "}
                     {s.submitted_at ? new Date(s.submitted_at).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" }) : ""}
                   </span>
-                  {s.description_ar && <p className="text-sm text-ink-2 line-clamp-3 whitespace-pre-line">{s.description_ar}</p>}
-                  <Link href={`/preview/${s.id}/1?lang=${s.languages[0]}`} className="self-start text-sm font-semibold text-blue underline underline-offset-4">
+                  {s.description_ar && <p className="text-[15px] text-ink-2 line-clamp-3 whitespace-pre-line">{s.description_ar}</p>}
+                  <Link href={`/preview/${s.id}/1?lang=${s.languages[0]}`} className="t-link t-caption text-ink self-start">
                     {d.admin.preview}
                   </Link>
                 </div>
-                <div className="flex flex-col gap-2 md:w-[260px] shrink-0">
+                <div className="flex flex-col gap-3 md:w-[260px] shrink-0">
                   <form action={approveSeries.bind(null, s.id)}>
-                    <button type="submit" className="w-full h-11 bg-[#0E7C4A] text-white text-sm font-bold">
+                    <Button type="submit" variant="primary" block className="h-11 text-[14px]">
                       {d.admin.approve}
-                    </button>
+                    </Button>
                   </form>
                   <form action={rejectSeries.bind(null, s.id)} className="flex flex-col gap-2">
-                    <textarea name="note" rows={2} placeholder={d.admin.rejectNote} className="w-full p-2 text-sm border border-hair bg-white" />
-                    <button type="submit" className="w-full h-10 border-[1.5px] border-[#B3261E] text-[#B3261E] text-sm font-bold">
+                    <textarea name="note" rows={2} placeholder={d.admin.rejectNote} className="field text-[14px]" />
+                    <Button type="submit" variant="secondary" block className="h-10 text-[14px]">
                       {d.admin.reject}
-                    </button>
+                    </Button>
                   </form>
                 </div>
               </li>
@@ -89,25 +91,25 @@ export default async function AdminPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <h2 className="font-display text-[28px] leading-tight">{d.admin.picks}</h2>
-          <p className="text-sm text-ink-2">{d.admin.picksLead}</p>
+        <div className="flex flex-col gap-1 pb-4 border-b border-hair">
+          <h2 className="t-h2">{d.admin.picks}</h2>
+          <p className="t-caption">{d.admin.picksLead}</p>
         </div>
         <PicksEditor picks={picks.map(toItem)} candidates={approved.map(toItem)} />
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-[28px] leading-tight">{d.admin.creators}</h2>
-        <ul className="divide-y divide-hair border-y border-hair">
+        <h2 className={h2}>{d.admin.creators}</h2>
+        <ul className="divide-y divide-hair">
           {((people ?? []) as Person[]).map((p) => (
-            <li key={p.id} className="flex items-center gap-3 py-3">
-              <span className="flex-1 flex items-center gap-1.5 font-semibold">
+            <li key={p.id} className="flex items-center gap-4 py-3">
+              <span className="flex-1 flex items-center gap-1.5 text-[15px]">
                 {p.display_name}
-                {p.is_verified && <VerifiedMark />}
+                {p.is_verified && <VerifiedMark size={12} />}
               </span>
-              <span className="text-xs text-muted">{d.account.role[p.role as "reader" | "creator" | "admin"]}</span>
+              <span className="t-caption">{d.account.role[p.role as "reader" | "creator" | "admin"]}</span>
               <form action={setVerified.bind(null, p.id, !p.is_verified)}>
-                <button type="submit" className={`h-9 px-3 text-xs font-semibold border ${p.is_verified ? "border-hair text-ink-2" : "border-ink bg-ink text-white"}`}>
+                <button type="submit" className="t-link t-caption text-ink">
                   {p.is_verified ? d.admin.unverify : d.admin.verify}
                 </button>
               </form>
@@ -117,21 +119,21 @@ export default async function AdminPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-[28px] leading-tight">
-          {d.admin.approved} <span className="text-muted text-lg font-sans">({approved.length})</span>
+        <h2 className={h2}>
+          {d.admin.approved} <span className="t-caption">({approved.length})</span>
         </h2>
-        <ul className="divide-y divide-hair border-y border-hair">
+        <ul className="divide-y divide-hair">
           {approved.map((s) => (
-            <li key={s.id} className="flex items-center gap-3 py-3">
-              <Link href={`/${s.kind === "comic" ? "comics" : "novels"}/${s.slug}`} className="flex-1 min-w-0 flex flex-col">
-                <span className="font-semibold truncate">{s.title_ar}</span>
-                <span className="text-xs text-muted">
+            <li key={s.id} className="flex items-center gap-4 py-3">
+              <Link href={`/${s.kind === "comic" ? "comics" : "novels"}/${s.slug}`} className="flex-1 min-w-0 flex flex-col hover:text-blue transition-colors">
+                <span className="text-[15px] truncate">{s.title_ar}</span>
+                <span className="t-caption">
                   {s.profiles?.display_name} · {s.episodes?.[0]?.count ?? 0}
                 </span>
               </Link>
-              <form action={hideSeries.bind(null, s.id)} className="flex items-center gap-2">
-                <input name="note" placeholder={d.admin.rejectNote} className="h-9 px-2 text-xs border border-hair bg-white w-[180px]" />
-                <ConfirmButton message={d.admin.unpublishSeries + "؟"} className="h-9 px-3 text-xs font-semibold border border-hair text-[#B3261E]">
+              <form action={hideSeries.bind(null, s.id)} className="flex items-center gap-3">
+                <input name="note" placeholder={d.admin.rejectNote} className="field h-9 text-[13px] w-[180px]" />
+                <ConfirmButton message={d.admin.unpublishSeries + "؟"} className="t-link t-caption text-ink shrink-0">
                   {d.admin.unpublishSeries}
                 </ConfirmButton>
               </form>
@@ -140,8 +142,8 @@ export default async function AdminPage() {
         </ul>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="font-display text-[28px] leading-tight">{d.admin.storage}</h2>
+      <section className="flex flex-col gap-4">
+        <h2 className={h2}>{d.admin.storage}</h2>
         <StorageSetup />
       </section>
     </div>

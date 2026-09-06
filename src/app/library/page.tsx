@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Cover } from "@/components/cover";
-import { VerifiedMark } from "@/components/icons";
-import { creatorHref, seriesHref } from "@/lib/links";
-import { EPISODE_WORD, formatNumber, weekdayLabel } from "@/lib/constants";
-import { fill } from "@/lib/i18n";
+import { Button } from "@/components/ui/button";
+import { CoverGrid } from "@/components/ui/cover-card";
+import { SectionHeader } from "@/components/ui/section-header";
+import { EPISODE_WORD, formatNumber } from "@/lib/constants";
 import { getDict } from "@/lib/lang-server";
+import { seriesHref } from "@/lib/links";
 import { toSummary } from "@/lib/queries";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { SeriesCardRow } from "@/lib/types";
@@ -17,12 +17,12 @@ export default async function LibraryPage() {
 
   if (!user) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 md:px-12 pt-8 md:pt-16 flex flex-col items-center gap-4 text-center">
-        <h1 className="font-display text-[34px] leading-tight">{d.library.title}</h1>
+      <div className="wrap pt-16 md:pt-24 section-end flex flex-col items-start gap-5 max-w-[720px]">
+        <h1 className="t-h1">{d.library.title}</h1>
         <p className="text-ink-2">{d.library.signIn}</p>
-        <Link href="/account?next=/library" className="px-6 h-12 inline-flex items-center bg-blue text-white font-bold">
+        <Button href="/account?next=/library" variant="primary">
           {d.account.signIn}
-        </Link>
+        </Button>
       </div>
     );
   }
@@ -37,53 +37,43 @@ export default async function LibraryPage() {
   const byId = new Map(((rows ?? []) as SeriesCardRow[]).map((r) => [r.id, toSummary(r, lang)]));
   const items = ids.map((id) => byId.get(id)).filter((s): s is NonNullable<typeof s> => !!s);
   const progressById = new Map((progress ?? []).map((p) => [p.series_id, p]));
+  const continuing = items.filter((s) => progressById.has(s.id));
 
   return (
-    <div className="mx-auto max-w-[1100px] px-4 md:px-12 pt-6 md:pt-12 flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[34px] leading-tight">{d.library.title}</h1>
-        <p className="text-sm text-ink-2">{d.library.lead}</p>
-      </div>
-      {items.length === 0 ? (
-        <div className="py-12 flex flex-col items-center gap-4 border border-dashed border-hair text-center">
-          <p className="text-sm text-muted">{d.library.empty}</p>
-          <Link href="/comics" className="px-5 h-11 inline-flex items-center bg-ink text-white font-semibold text-sm">
-            {d.library.browse}
-          </Link>
-        </div>
-      ) : (
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {items.map((s) => {
-            const p = progressById.get(s.id);
-            const word = EPISODE_WORD[s.kind][lang];
-            const base = seriesHref(s);
-            const readHref = p ? `${base}/${p.number}?lang=${p.lang}` : s.latestEpisode ? `${base}/1` : base;
-            return (
-              <li key={s.id} className="flex items-center gap-4 p-3 bg-surface border border-hair">
-                <Link href={base} className="w-[72px] shrink-0">
-                  <Cover src={s.coverUrl} title={s.title} tint={s.tint} />
-                </Link>
-                <div className="flex flex-col gap-1 min-w-0 flex-1">
-                  <Link href={base} className="font-semibold leading-snug truncate hover:text-blue">
+    <div className="wrap pt-10 md:pt-16 section-end flex flex-col gap-12 md:gap-16">
+      {continuing.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <SectionHeader title={d.series.continueReading} />
+          <ul className="divide-y divide-hair">
+            {continuing.map((s) => {
+              const p = progressById.get(s.id)!;
+              return (
+                <li key={s.id} className="flex items-center justify-between gap-4 py-3">
+                  <Link href={seriesHref(s)} className="t-series hover:text-blue transition-colors truncate">
                     {s.title}
                   </Link>
-                  <Link href={creatorHref(s.creator)} className="flex items-center gap-1.5 text-xs text-muted hover:text-ink">
-                    {s.creator.name}
-                    {s.creator.verified && <VerifiedMark />}
+                  <Link href={`${seriesHref(s)}/${p.number}?lang=${p.lang}`} className="t-link t-caption text-ink shrink-0">
+                    {EPISODE_WORD[s.kind][lang]} {formatNumber(p.number, lang)} ←
                   </Link>
-                  <span className="text-xs text-ink-2">
-                    {s.latestEpisode ? `${word} ${formatNumber(s.latestEpisode.number, lang)} · ` : ""}
-                    {fill(d.series.every, { day: weekdayLabel(s.publishDay, lang) })}
-                  </span>
-                  <Link href={readHref} className="self-start mt-1 px-3.5 h-9 inline-flex items-center bg-ink text-white text-xs font-semibold">
-                    {p ? `${d.series.continueReading} · ${word} ${formatNumber(p.number, lang)}` : d.series.startReading}
-                  </Link>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       )}
+      <section className="flex flex-col gap-6 md:gap-8">
+        <SectionHeader title={d.library.title} note={d.library.lead} />
+        {items.length === 0 ? (
+          <div className="flex flex-col items-start gap-4 py-6">
+            <p className="text-ink-2">{d.library.empty}</p>
+            <Button href="/comics" variant="secondary">
+              {d.library.browse}
+            </Button>
+          </div>
+        ) : (
+          <CoverGrid items={items} priority />
+        )}
+      </section>
     </div>
   );
 }

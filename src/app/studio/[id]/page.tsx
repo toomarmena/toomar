@@ -4,10 +4,10 @@ import { ConfirmButton } from "@/components/studio/confirm-button";
 import { CoverUploader } from "@/components/studio/cover-uploader";
 import { SeriesForm } from "@/components/studio/series-form";
 import { SubmitBox } from "@/components/studio/submit-box";
+import { Button } from "@/components/ui/button";
 import { EPISODE_WORD, formatNumber } from "@/lib/constants";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
-import { tintFor } from "@/lib/queries";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { EpisodeRow, SeriesRow } from "@/lib/types";
 import { createEpisode, deleteSeries, updateSeries } from "../actions";
@@ -33,21 +33,21 @@ export default async function StudioSeriesPage({ params }: PageProps<"/studio/[i
   const remove = deleteSeries.bind(null, series.id);
 
   return (
-    <div className="flex flex-col gap-8">
-      <Link href="/studio" className="text-sm text-muted hover:text-ink">
-        ← {d.studio.title}
+    <div className="flex flex-col gap-10">
+      <Link href="/studio" className="t-link t-caption text-ink self-start">
+        → {d.studio.nav.series}
       </Link>
 
       <div className="flex flex-col md:flex-row md:items-start gap-6 md:gap-10">
-        <CoverUploader seriesId={series.id} coverUrl={mediaUrl(series.cover_key)} title={series.title_ar} tint={tintFor(series.id)} />
+        <CoverUploader seriesId={series.id} coverUrl={mediaUrl(series.cover_key)} />
         <div className="flex-1 flex flex-col gap-4 min-w-0">
-          <h1 className="font-display text-[34px] leading-tight">{series.title_ar}</h1>
-          <p className="text-sm text-muted">
+          <h1 className="t-h2">{series.title_ar}</h1>
+          <p className="t-caption">
             {series.kind === "comic" ? d.studio.comic : d.studio.novel} · {formatNumber(Number(followers ?? 0), lang)} {d.studio.followers}
           </p>
           <SubmitBox seriesId={series.id} status={series.status} note={series.rejection_note} />
           {series.status === "approved" && (
-            <Link href={publicHref} className="self-start text-sm font-semibold text-blue underline underline-offset-4">
+            <Link href={publicHref} className="t-link t-caption text-ink self-start" dir="ltr">
               {publicHref}
             </Link>
           )}
@@ -55,33 +55,33 @@ export default async function StudioSeriesPage({ params }: PageProps<"/studio/[i
       </div>
 
       <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h2 className="font-display text-[28px] leading-tight">{series.kind === "comic" ? d.studio.episodes : d.studio.chapters}</h2>
-          <div className="flex gap-2">
+        <div className="flex items-baseline justify-between gap-4 flex-wrap pb-4 border-b border-hair">
+          <h2 className="t-h2">{series.kind === "comic" ? d.studio.episodes : d.studio.chapters}</h2>
+          <div className="flex gap-3">
             {series.languages.map((l) => {
               const create = createEpisode.bind(null, series.id, l);
               return (
                 <form key={l} action={create}>
-                  <button type="submit" className="px-4 h-10 bg-blue text-white text-sm font-bold hover:bg-blue-deep">
+                  <Button type="submit" variant="secondary" className="h-10 px-4 text-[14px]">
                     {series.kind === "comic" ? d.studio.newEpisode : d.studio.newChapter} ({l === "ar" ? "ع" : "EN"})
-                  </button>
+                  </Button>
                 </form>
               );
             })}
           </div>
         </div>
-        {series.status !== "approved" && <p className="text-xs text-muted">{d.studio.seriesNotApproved}</p>}
+        {series.status !== "approved" && <p className="t-caption">{d.studio.seriesNotApproved}</p>}
         {episodes.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted border border-dashed border-hair">{d.common.none}</p>
+          <p className="t-caption py-6">{d.common.none}</p>
         ) : (
-          <ul className="divide-y divide-hair border-y border-hair">
+          <ul className="divide-y divide-hair">
             {episodes.map((e) => (
               <li key={e.id}>
-                <Link href={`/studio/${series.id}/episodes/${e.id}`} className="flex items-center gap-4 py-3 hover:bg-surface -mx-2 px-2">
-                  <span className="font-display text-xl w-10 text-center">{formatNumber(e.number, lang)}</span>
-                  <span className="text-[11px] font-semibold px-1.5 py-0.5 border border-hair text-muted">{e.lang === "ar" ? "ع" : "EN"}</span>
-                  <span className="flex-1 truncate font-semibold">{e.title || `${word} ${formatNumber(e.number, lang)}`}</span>
-                  <span className={`text-xs font-semibold ${e.is_published ? "text-[#0E7C4A]" : "text-muted"}`}>{e.is_published ? d.studio.published : d.studio.unpublished}</span>
+                <Link href={`/studio/${series.id}/episodes/${e.id}`} className="flex items-center gap-4 py-3 group">
+                  <span className="w-8 t-caption text-ink">{formatNumber(e.number, lang)}</span>
+                  <span className="t-caption">{e.lang === "ar" ? "ع" : "EN"}</span>
+                  <span className="flex-1 truncate text-[15px] group-hover:text-blue transition-colors">{e.title || `${word} ${formatNumber(e.number, lang)}`}</span>
+                  <span className="t-caption">{e.is_published ? d.studio.published : d.studio.unpublished}</span>
                 </Link>
               </li>
             ))}
@@ -90,13 +90,13 @@ export default async function StudioSeriesPage({ params }: PageProps<"/studio/[i
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-display text-[28px] leading-tight">{d.studio.save}</h2>
+        <h2 className="t-h2 pb-4 border-b border-hair">{d.studio.save}</h2>
         <SeriesForm action={update} series={series} />
       </section>
 
       {(series.status === "draft" || series.status === "rejected") && (
         <form action={remove} className="pt-4 border-t border-hair">
-          <ConfirmButton message={d.studio.confirmDelete} className="text-sm font-semibold text-[#B3261E] underline underline-offset-4">
+          <ConfirmButton message={d.studio.confirmDelete} className="t-link t-caption text-ink">
             {d.studio.delete}
           </ConfirmButton>
         </form>

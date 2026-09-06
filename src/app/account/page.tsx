@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { AuthForm } from "@/components/auth-form";
-import { VerifiedMark } from "@/components/icons";
-import { getDict } from "@/lib/lang-server";
-import { getProfile } from "@/lib/supabase/server";
 import { Avatar } from "@/components/avatar";
+import { VerifiedMark } from "@/components/icons";
+import { Wordmark } from "@/components/wordmark";
+import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
+import { getProfile } from "@/lib/supabase/server";
 import { setUiLang, signOut } from "./actions";
 
 export const metadata = { title: "حسابي" };
@@ -17,62 +18,63 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
 
   if (!profile) {
     return (
-      <div className="mx-auto max-w-[1440px] px-4 md:px-12 pt-8 md:pt-16 flex flex-col items-center gap-6">
-        <div className="flex flex-col items-center gap-2 text-center">
-          <span className="font-display text-[44px] leading-none">طومار</span>
-          <p className="text-ink-2">{sp.check ? "تحقّق من بريدك لتأكيد الحساب." : d.account.welcome}</p>
+      <div className="wrap pt-16 md:pt-24 section-end flex flex-col items-center gap-8">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <Wordmark size="lg" href="/" />
+          <p className="t-caption">{sp.check ? d.account.checkInbox : d.account.welcome}</p>
         </div>
         <AuthForm next={next} initialError={typeof sp.error === "string" ? sp.error : undefined} />
       </div>
     );
   }
 
+  const links = [
+    { href: "/studio", label: d.nav.studio },
+    { href: "/studio/profile", label: d.account.editProfile },
+    { href: "/library", label: d.nav.library },
+    ...(profile.role === "admin" ? [{ href: "/admin", label: d.nav.admin }] : []),
+  ];
+
   return (
-    <div className="mx-auto max-w-[720px] px-4 md:px-12 pt-6 md:pt-12 flex flex-col gap-8">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="font-display text-[34px] leading-tight">{d.account.title}</h1>
+    <div className="wrap pt-10 md:pt-16 section-end flex flex-col gap-10 max-w-[720px]">
+      <div className="flex items-baseline justify-between gap-4 pb-4 border-b border-hair">
+        <h1 className="t-h2">{d.account.title}</h1>
         <form action={signOut}>
-          <button type="submit" className="text-sm text-ink-2 underline underline-offset-4 hover:text-ink">
+          <button type="submit" className="t-link t-caption text-ink">
             {d.account.signOut}
           </button>
         </form>
       </div>
 
-      <div className="flex items-center gap-4 p-4 bg-surface border border-hair">
-        <Avatar src={mediaUrl(profile.avatar_key)} name={profile.display_name} size={56} />
-        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-          <span className="font-semibold flex items-center gap-1.5">
+      <div className="flex items-center gap-4">
+        <Avatar src={mediaUrl(profile.avatar_key)} size={56} />
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <span className="t-series flex items-center gap-1.5">
             {profile.display_name}
-            {profile.is_verified && <VerifiedMark />}
+            {profile.is_verified && <VerifiedMark size={12} />}
           </span>
-          <span className="text-xs text-muted">
+          <span className="t-caption">
             {d.account.role[profile.role]} · <span dir="ltr">@{profile.handle}</span>
           </span>
         </div>
-        <Link href="/studio/profile" className="text-sm font-semibold text-blue underline underline-offset-4 shrink-0">
-          {d.account.editProfile}
-        </Link>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        <Link href="/studio" className="px-5 py-2.5 text-sm font-semibold border-[1.5px] border-ink text-ink hover:bg-ink hover:text-white">
-          {d.nav.studio}
-        </Link>
-        <Link href="/library" className="px-5 py-2.5 text-sm font-semibold border border-hair text-ink hover:border-ink">
-          {d.nav.library}
-        </Link>
-        {profile.role === "admin" && (
-          <Link href="/admin" className="px-5 py-2.5 text-sm font-semibold border border-hair text-ink hover:border-ink">
-            {d.nav.admin}
-          </Link>
-        )}
-      </div>
+      <ul className="divide-y divide-hair border-y border-hair">
+        {links.map((l) => (
+          <li key={l.href}>
+            <Link href={l.href} className="flex items-center justify-between py-3.5 hover:text-blue transition-colors">
+              <span>{l.label}</span>
+              <span aria-hidden>←</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
 
-      <form action={setUiLang} className="flex items-center gap-3 text-sm">
-        <span className="font-semibold">{d.account.uiLang}</span>
-        <div className="flex border border-hair">
+      <form action={setUiLang} className="flex items-center gap-6">
+        <span className="t-caption">{d.account.uiLang}</span>
+        <div className="flex gap-5">
           {(["ar", "en"] as const).map((l) => (
-            <button key={l} type="submit" name="lang" value={l} className={`px-4 py-2 font-semibold ${l === lang ? "bg-ink text-white" : "text-ink-2 hover:text-ink"}`}>
+            <button key={l} type="submit" name="lang" value={l} className={`text-[13px] border-b-2 pb-0.5 transition-colors ${l === lang ? "text-ink border-ink font-medium" : "text-muted border-transparent hover:text-ink"}`}>
               {l === "ar" ? "العربية" : "English"}
             </button>
           ))}

@@ -16,10 +16,10 @@ export default async function StudioProfilePage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-1">
-        <h1 className="font-display text-[34px] leading-tight">{d.studio.profile.title}</h1>
-        <p className="text-sm text-ink-2">{d.studio.profile.lead}</p>
+        <h1 className="t-h2">{d.studio.profile.title}</h1>
+        <p className="t-caption">{d.studio.profile.lead}</p>
       </div>
-      <AvatarUploader src={mediaUrl(profile.avatar_key)} name={profile.display_name} />
+      <AvatarUploader src={mediaUrl(profile.avatar_key)} />
       <ProfileForm profile={{ display_name: profile.display_name, handle: profile.handle, bio: profile.bio, social_links: cleanSocialLinks(profile.social_links) }} />
     </div>
   );

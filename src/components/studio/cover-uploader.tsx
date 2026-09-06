@@ -6,8 +6,9 @@ import { presignCover, setCover } from "@/app/studio/actions";
 import { prepareImage, putToR2 } from "@/lib/image-client";
 import { Cover } from "../cover";
 import { useT } from "../lang-provider";
+import { Button } from "../ui/button";
 
-export function CoverUploader({ seriesId, coverUrl, title, tint }: { seriesId: string; coverUrl: string | null; title: string; tint: string }) {
+export function CoverUploader({ seriesId, coverUrl }: { seriesId: string; coverUrl: string | null; title?: string; tint?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -33,15 +34,15 @@ export function CoverUploader({ seriesId, coverUrl, title, tint }: { seriesId: s
   };
 
   return (
-    <div className="flex flex-col gap-3 w-[160px]">
-      <Cover src={coverUrl} title={title} tint={tint} />
+    <div className="flex flex-col gap-3 w-[140px] md:w-[160px]">
+      <Cover src={coverUrl} />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
-      <button type="button" disabled={busy} onClick={() => fileRef.current?.click()} className="h-10 border-[1.5px] border-ink text-sm font-semibold text-ink hover:bg-ink hover:text-white disabled:opacity-60">
+      <Button variant="secondary" disabled={busy} onClick={() => fileRef.current?.click()} className="h-10 px-4 text-[14px]">
         {busy ? d.common.loading : d.studio.uploadCover}
-      </button>
-      <p className="text-[11px] text-muted leading-snug">{d.studio.coverHint}</p>
+      </Button>
+      <p className="t-caption leading-snug">{d.studio.coverHint}</p>
       {error && (
-        <p role="alert" className="text-xs text-[#B3261E]">
+        <p role="alert" className="t-caption text-ink">
           {error}
         </p>
       )}
