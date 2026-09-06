@@ -20,13 +20,13 @@ async function homeData(lang: Lang) {
 export default async function HomePage() {
   const { lang, d } = await getDict();
   const { picks, running, featured, today } = await homeData(lang);
-  const pad = "px-[18px] md:px-16";
+  const pad = "px-5 md:px-16";
 
   return (
     <div className="flex flex-col">
       <Hero featured={featured} lang={lang} d={d} />
 
-      <section className={`pt-[22px] md:pt-12 flex flex-col gap-3 md:gap-[22px] ${pad}`}>
+      <section className={`pt-10 md:pt-12 flex flex-col gap-5 md:gap-[22px] ${pad}`}>
         <div className="hidden md:block">
           <SectionHeader title={d.home.picks} note={d.home.picksNote} />
         </div>
@@ -37,7 +37,7 @@ export default async function HomePage() {
           <p className="py-8 text-center text-sm text-muted frame border-dashed">{d.home.empty}</p>
         ) : (
           <>
-            <ul className="md:hidden flex gap-3.5 overflow-x-auto no-scrollbar -mx-[18px] px-[18px] pt-1 pb-3">
+            <ul className="md:hidden flex gap-5 overflow-x-auto no-scrollbar -mx-5 px-5 pt-1 pb-4">
               {picks.map((s, i) => (
                 <li key={s.id} className="shrink-0">
                   <CoverCard series={s} priority={i < 2} width={170} />
@@ -55,17 +55,17 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section className={`pt-[22px] md:pt-14 flex flex-col gap-3 md:gap-[18px] ${pad}`}>
+      <section className={`pt-12 md:pt-14 flex flex-col gap-5 md:gap-[18px] ${pad}`}>
         <SectionHeader title={d.home.schedule} />
         <WeekSchedule items={running} today={today} />
       </section>
 
-      <section className={`pt-8 md:pt-16 grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 ${pad}`}>
+      <section className={`pt-14 md:pt-16 grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-6 ${pad}`}>
         <PosterBlock kind="comic" micro="WEB COMICS" title={d.nav.comics} text={d.section.comicsLead} href="/comics" />
         <PosterBlock kind="novel" micro="NOVELS" title={d.nav.novels} text={d.section.novelsLead} href="/novels" />
       </section>
 
-      <section className="mt-10 md:mt-[72px] bg-yellow text-ink border-t-2 border-ink px-[18px] py-8 md:px-16 md:py-14 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <section className="mt-16 md:mt-[72px] bg-yellow text-ink border-t-2 border-ink px-5 py-12 md:px-16 md:py-14 flex flex-col md:flex-row md:items-center md:justify-between gap-8">
         <div className="flex flex-col gap-2">
           <span className="font-display text-[60px] md:text-[96px] leading-none">{d.home.toBeContinued}</span>
           <span className="text-base md:text-lg font-semibold">{d.home.publishFirst}</span>

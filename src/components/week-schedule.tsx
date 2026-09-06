@@ -16,8 +16,8 @@ export function WeekSchedule({ items, today }: { items: SeriesSummary[]; today: 
   const list = items.filter((s) => s.publishDay === day);
 
   return (
-    <div className="flex flex-col gap-3 md:gap-[18px]">
-      <div role="tablist" className="flex gap-2 md:gap-2.5 overflow-x-auto no-scrollbar -mx-[18px] px-[18px] pb-1 md:mx-0 md:px-0 md:pb-0">
+    <div className="flex flex-col gap-5 md:gap-[18px]">
+      <div role="tablist" className="flex gap-2.5 overflow-x-auto no-scrollbar -mx-5 px-5 pb-1 md:mx-0 md:px-0 md:pb-0">
         {WEEK_ORDER.map((wd) => (
           <Chip key={wd} role="tab" ariaSelected={wd === day} active={wd === day} onClick={() => setDay(wd)}>
             {weekdayLabel(wd, lang)}
@@ -28,7 +28,7 @@ export function WeekSchedule({ items, today }: { items: SeriesSummary[]; today: 
       {list.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted frame border-dashed">{fill(d.home.nothingOn, { day: weekdayLabel(day, lang) })}</p>
       ) : (
-        <ul className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
+        <ul className="grid grid-cols-3 md:grid-cols-6 gap-4 md:gap-4">
           {list.map((s) => (
             <li key={s.id}>
               <CoverTile series={s} />

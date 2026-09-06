@@ -6,7 +6,7 @@ export function PosterBlock({ kind, title, text, href, micro }: { kind: "comic" 
   return (
     <Link
       href={href}
-      className={`relative flex flex-col justify-end gap-2 md:gap-2.5 p-5 md:p-9 min-h-[200px] md:min-h-[300px] frame press overflow-hidden ${
+      className={`relative flex flex-col justify-end gap-2 md:gap-2.5 p-6 md:p-9 min-h-[230px] md:min-h-[300px] frame press overflow-hidden ${
         comic ? "bg-blue text-white shadow-hard-lg" : "bg-paper text-ink shadow-hard-violet"
       }`}
     >

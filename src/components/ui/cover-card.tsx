@@ -23,7 +23,7 @@ export function CoverCard({ series, priority = false, width }: { series: SeriesS
         <Cover src={series.coverUrl} title={series.title} priority={priority} />
         <Badge className="absolute top-2 right-2 md:top-3.5 md:right-3.5">{series.kind === "comic" ? d.nav.comics : d.nav.novels}</Badge>
       </div>
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-1">
         <span className="t-series group-hover:text-blue line-clamp-2">{series.title}</span>
         <span className="flex flex-wrap items-center gap-1 text-[12px] md:text-[14px] text-ink-2">
           <span className="inline-flex items-center gap-1">

@@ -33,7 +33,7 @@ export function Shell({ children, signedIn, role }: { children: ReactNode; signe
     <>
       {/* DesktopNav */}
       <header className="border-b-2 border-ink bg-paper">
-        <div className="mx-auto max-w-[1440px] flex items-center justify-between gap-6 px-[18px] py-3 md:px-16 md:py-5">
+        <div className="mx-auto max-w-[1440px] flex items-center justify-between gap-6 px-5 py-4 md:px-16 md:py-5">
           <div className="flex items-center gap-10">
             <Wordmark />
             <div className="hidden md:block">
@@ -78,7 +78,7 @@ export function Shell({ children, signedIn, role }: { children: ReactNode; signe
         </div>
       </header>
 
-      <main className="flex-1 pb-[84px] md:pb-0">{children}</main>
+      <main className="flex-1 pb-[96px] md:pb-0">{children}</main>
 
       <footer className="hidden md:block border-t-2 border-ink">
         <div className="mx-auto max-w-[1440px] px-16 py-8 flex items-center justify-between text-sm text-muted">
