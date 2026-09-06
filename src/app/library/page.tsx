@@ -41,9 +41,17 @@ export default async function LibraryPage() {
   const items = ids.map((id) => byId.get(id)).filter((s): s is NonNullable<typeof s> => !!s);
   const progressById = new Map((progress ?? []).map((p) => [p.series_id, p]));
   const continuing = items.filter((s) => progressById.has(s.id));
+  // A followed series with an episode newer than the last one read (or never opened).
+  const unread = items.filter((s) => s.latestEpisode && (progressById.get(s.id)?.number ?? 0) < s.latestEpisode.number);
 
   return (
     <div className="wrap pt-10 md:pt-16 section-end flex flex-col gap-12 md:gap-16">
+      {unread.length > 0 && (
+        <section className="flex flex-col gap-6 md:gap-8">
+          <SectionHeader title={d.library.newForYou} />
+          <CoverGrid items={unread} priority />
+        </section>
+      )}
       {continuing.length > 0 && (
         <section className="flex flex-col gap-4">
           <SectionHeader title={d.series.continueReading} />

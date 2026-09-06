@@ -74,6 +74,7 @@ export default async function StudioStatsPage() {
                         <th className="text-start font-normal py-2" title={d.studio.stats.returnedHint}>
                           {d.studio.stats.returned}
                         </th>
+                        <th className="text-start font-normal py-2">{d.admin.liked}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-hair border-y border-hair">
@@ -85,6 +86,7 @@ export default async function StudioStatsPage() {
                           <td className="py-2.5">{formatNumber(row.openers, lang)}</td>
                           <td className="py-2.5">{pct(row.completers, row.openers, lang)}</td>
                           <td className="py-2.5">{pct(row.returned, row.openers, lang)}</td>
+                          <td className="py-2.5">{formatNumber(row.liked, lang)}</td>
                         </tr>
                       ))}
                     </tbody>

@@ -49,6 +49,7 @@ export type Profile = {
   handle: string;
   avatar_key: string | null;
   social_links: Record<string, string>;
+  notify_email: boolean;
 };
 
 export async function getProfile(): Promise<Profile | null> {

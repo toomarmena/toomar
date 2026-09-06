@@ -10,8 +10,8 @@ import { AGE_RATING, RUN_STATUS } from "@/lib/constants";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
 import { createClient, getProfile } from "@/lib/supabase/server";
-import type { SeriesRow } from "@/lib/types";
-import { approveSeries, hideSeries, rejectSeries, setVerified, transferSeries } from "./actions";
+import type { ReportRow, SeriesRow } from "@/lib/types";
+import { approveSeries, hideSeries, rejectSeries, resolveReport, setVerified, transferSeries } from "./actions";
 
 export async function generateMetadata() {
   const { d } = await getDict();
@@ -33,11 +33,13 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
   }
 
   const supabase = await createClient();
-  const [{ data: pendingData }, { data: approvedData }, { data: people }] = await Promise.all([
+  const [{ data: pendingData }, { data: approvedData }, { data: people }, { data: reportData }] = await Promise.all([
     supabase.from("series").select("*, profiles!series_creator_id_fkey(display_name, is_verified), episodes(count)").eq("status", "pending").order("submitted_at", { ascending: true }),
     supabase.from("series").select("*, profiles!series_creator_id_fkey(display_name, is_verified), episodes(count)").eq("status", "approved").order("approved_at", { ascending: false }),
     supabase.from("profiles").select("id, display_name, role, is_verified, created_at").in("role", ["creator", "admin"]).order("created_at", { ascending: false }),
+    supabase.from("reports").select("*, series(title_ar, slug, kind), profiles(display_name)").is("resolved_at", null).order("created_at", { ascending: false }),
   ]);
+  const reports = (reportData ?? []) as (ReportRow & { series: { title_ar: string; slug: string; kind: "comic" | "novel" } | null; profiles: { display_name: string } | null })[];
   const pending = (pendingData ?? []) as Row[];
   const approved = (approvedData ?? []) as Row[];
   const picks = approved.filter((s) => s.featured_rank !== null).sort((a, b) => a.featured_rank! - b.featured_rank!);
@@ -89,6 +91,38 @@ export default async function AdminPage({ searchParams }: PageProps<"/admin">) {
                     </Button>
                   </form>
                 </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <h2 className={h2}>
+          {d.admin.reports} <span className="t-caption">({reports.length})</span>
+        </h2>
+        {reports.length === 0 ? (
+          <p className="t-caption py-6">{d.admin.noReports}</p>
+        ) : (
+          <ul className="divide-y divide-hair">
+            {reports.map((r) => (
+              <li key={r.id} className="flex items-start gap-4 py-3">
+                <div className="flex-1 min-w-0 flex flex-col gap-1">
+                  {r.series && (
+                    <Link href={`/${r.series.kind === "comic" ? "comics" : "novels"}/${r.series.slug}`} className="text-[15px] hover:text-blue transition-colors">
+                      {r.series.title_ar}
+                    </Link>
+                  )}
+                  <p className="text-[14px] text-ink-2">{r.reason}</p>
+                  <span className="t-caption">
+                    {d.admin.reportedBy} {r.profiles?.display_name ?? "—"} · {new Date(r.created_at).toLocaleDateString("ar-EG", { timeZone: "Africa/Cairo" })}
+                  </span>
+                </div>
+                <form action={resolveReport.bind(null, r.id)}>
+                  <button type="submit" className="t-link t-caption text-ink shrink-0">
+                    {d.admin.resolve}
+                  </button>
+                </form>
               </li>
             ))}
           </ul>

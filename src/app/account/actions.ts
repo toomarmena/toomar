@@ -67,6 +67,16 @@ export async function signInWithGoogle(form: FormData) {
   redirect(data.url);
 }
 
+export async function setNotifyEmail(form: FormData) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+  await supabase.from("profiles").update({ notify_email: form.get("notify_email") === "on" }).eq("id", user.id);
+  revalidatePath("/account");
+}
+
 export async function requestPasswordReset(form: FormData) {
   const email = String(form.get("email") ?? "").trim();
   if (email) {

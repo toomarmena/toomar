@@ -6,7 +6,7 @@ import { Wordmark } from "@/components/wordmark";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
 import { getProfile } from "@/lib/supabase/server";
-import { setUiLang, signOut } from "./actions";
+import { setNotifyEmail, setUiLang, signOut } from "./actions";
 
 export async function generateMetadata() {
   const { d } = await getDict();
@@ -72,6 +72,16 @@ export default async function AccountPage({ searchParams }: PageProps<"/account"
           </li>
         ))}
       </ul>
+
+      <form action={setNotifyEmail} className="flex items-center gap-3">
+        <input id="notify" type="checkbox" name="notify_email" defaultChecked={profile.notify_email} className="accent-ink" onChange={undefined} />
+        <label htmlFor="notify" className="text-[14px] text-ink-2">
+          {d.account.notifyEmail}
+        </label>
+        <button type="submit" className="t-link t-caption text-ink">
+          {d.account.save}
+        </button>
+      </form>
 
       <form action={setUiLang} className="flex items-center gap-6">
         <span className="t-caption">{d.account.uiLang}</span>

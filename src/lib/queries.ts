@@ -32,6 +32,7 @@ export function toSummary(r: SeriesCardRow, lang: Lang = "ar"): SeriesSummary {
     runStatus: r.run_status ?? "ongoing",
     ageRating: r.age_rating ?? "all",
     description: (lang === "en" ? r.description_en || r.description_ar : r.description_ar || r.description_en) ?? null,
+    fresh: !!r.latest_published_at && Date.now() - Date.parse(r.latest_published_at) < 72 * 3600 * 1000,
   };
 }
 
@@ -114,12 +115,13 @@ function orEmpty(error: { message: string } | null, where: string) {
   if (error) console.error(`[toomar] ${where}: ${error.message}`);
 }
 
-export async function listApproved(opts: { kind?: SeriesKind; genre?: string; lang?: Lang; creatorId?: string } = {}): Promise<SeriesSummary[]> {
+export async function listApproved(opts: { kind?: SeriesKind; genre?: string; lang?: Lang; creatorId?: string; runStatus?: "ongoing" | "completed" } = {}): Promise<SeriesSummary[]> {
   const supabase = await createClient();
   let q = supabase.from("series_cards").select(CARD_COLUMNS).order("approved_at", { ascending: false });
   if (opts.kind) q = q.eq("kind", opts.kind);
   if (opts.genre) q = q.eq("genre", opts.genre);
   if (opts.creatorId) q = q.eq("creator_id", opts.creatorId);
+  if (opts.runStatus) q = q.eq("run_status", opts.runStatus);
   const { data, error } = await q;
   orEmpty(error, "listApproved");
   return ((data ?? []) as SeriesCardRow[]).map((r) => toSummary(r, opts.lang));
@@ -154,31 +156,54 @@ export async function getSeriesById(id: string, lang?: Lang): Promise<SeriesDeta
   return toDetail(row, lang);
 }
 
+/** Live = published, or scheduled and the time has passed. Mirrors `episode_live()` in SQL. */
+const LIVE = () => `is_published.eq.true,publish_at.lte.${new Date().toISOString()}`;
+
 export async function listEpisodes(seriesId: string, lang: Lang): Promise<EpisodeListItem[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("episodes")
-    .select("id, number, lang, title, published_at, episode_images(key, position)")
+    .select("id, number, lang, title, published_at, publish_at, episode_images(key, position)")
     .eq("series_id", seriesId)
     .eq("lang", lang)
-    .eq("is_published", true)
+    .or(LIVE())
     .order("number", { ascending: false })
     .order("position", { referencedTable: "episode_images", ascending: true })
     .limit(1, { referencedTable: "episode_images" });
   if (error) throw error;
   return (data ?? []).map((e) => {
     const first = (e.episode_images as { key: string }[] | null)?.[0];
-    return { id: e.id, number: e.number, lang: e.lang, title: e.title, publishedAt: e.published_at, thumbUrl: mediaUrl(first?.key) };
+    return { id: e.id, number: e.number, lang: e.lang, title: e.title, publishedAt: e.published_at ?? e.publish_at, thumbUrl: mediaUrl(first?.key) };
   });
 }
 
 export async function getEpisode(seriesId: string, number: number, lang: Lang, preview = false): Promise<EpisodeRow | null> {
   const supabase = await createClient();
   let q = supabase.from("episodes").select("*").eq("series_id", seriesId).eq("number", number).eq("lang", lang);
-  if (!preview) q = q.eq("is_published", true);
+  if (!preview) q = q.or(LIVE());
   const { data, error } = await q.maybeSingle();
   if (error) throw error;
   return (data as EpisodeRow | null) ?? null;
+}
+
+export async function hasReacted(userId: string | null, episodeId: string) {
+  if (!userId) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.from("episode_reactions").select("episode_id").eq("user_id", userId).eq("episode_id", episodeId).maybeSingle();
+  return !!data;
+}
+
+/** The next publish moment of a series: its weekday at 09:00 Cairo time, as a real instant. */
+export function nextPublishInstant(publishDay: number, now = Date.now()) {
+  const cairoNow = new Date(new Date(now).toLocaleString("en-US", { timeZone: "Africa/Cairo" }));
+  let diff = (publishDay - cairoNow.getDay() + 7) % 7;
+  if (diff === 0 && cairoNow.getHours() >= 9) diff = 7;
+  const target = new Date(cairoNow);
+  target.setDate(cairoNow.getDate() + diff);
+  const guess = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate(), 9, 0, 0);
+  const inCairo = new Date(new Date(guess).toLocaleString("en-US", { timeZone: "Africa/Cairo" })).getTime();
+  const inUtc = new Date(new Date(guess).toLocaleString("en-US", { timeZone: "UTC" })).getTime();
+  return new Date(guess - (inCairo - inUtc));
 }
 
 export async function listEpisodeImages(episodeId: string): Promise<EpisodeImage[]> {
@@ -197,7 +222,7 @@ export async function getNeighbours(seriesId: string, number: number, lang: Lang
   const supabase = await createClient();
   const base = () => {
     const q = supabase.from("episodes").select("number").eq("series_id", seriesId).eq("lang", lang);
-    return preview ? q : q.eq("is_published", true);
+    return preview ? q : q.or(LIVE());
   };
   const [{ data: prev }, { data: next }] = await Promise.all([
     base().lt("number", number).order("number", { ascending: false }).limit(1).maybeSingle(),
@@ -228,7 +253,7 @@ export async function searchSeries(term: string, lang?: Lang): Promise<SeriesSum
   const { data, error } = await supabase
     .from("series_cards")
     .select(CARD_COLUMNS)
-    .or(`title_ar.ilike.${like},title_en.ilike.${like},creator_name.ilike.${like}`)
+    .or(`title_ar.ilike.${like},title_en.ilike.${like},creator_name.ilike.${like},description_ar.ilike.${like},description_en.ilike.${like}`)
     .limit(30);
   if (error) throw error;
   return ((data ?? []) as SeriesCardRow[]).map((r) => toSummary(r, lang));

@@ -3,12 +3,13 @@ import { notFound, redirect } from "next/navigation";
 import { ConfirmButton } from "@/components/studio/confirm-button";
 import { ImageEditor } from "@/components/studio/image-editor";
 import { Button } from "@/components/ui/button";
-import { EPISODE_WORD, formatNumber } from "@/lib/constants";
+import { EPISODE_WORD, formatNumber, isScheduledAhead, weekdayLabel } from "@/lib/constants";
+import { fill } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
 import { createClient, getUser } from "@/lib/supabase/server";
 import type { EpisodeImageRow, EpisodeRow, SeriesRow } from "@/lib/types";
-import { deleteEpisode, setEpisodePublished, updateEpisode } from "../../../actions";
+import { deleteEpisode, scheduleEpisode, setEpisodePublished, unscheduleEpisode, updateEpisode } from "../../../actions";
 
 export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[id]/episodes/[epId]">) {
   const { id, epId } = await params;
@@ -31,6 +32,10 @@ export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[
   const word = EPISODE_WORD[series.kind][lang];
   const save = updateEpisode.bind(null, episode.id);
   const publish = setEpisodePublished.bind(null, episode.id, !episode.is_published);
+  const schedule = scheduleEpisode.bind(null, episode.id);
+  const unschedule = unscheduleEpisode.bind(null, episode.id);
+  const scheduled = isScheduledAhead(episode.publish_at, episode.is_published);
+  const day = weekdayLabel(series.publish_day, lang);
   const remove = deleteEpisode.bind(null, episode.id);
   const previewHref = `/preview/${series.id}/${episode.number}?lang=${episode.lang}`;
 
@@ -46,17 +51,38 @@ export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[
             {word} {formatNumber(episode.number, lang)}
             <span className="t-caption ms-3">{episode.lang === "ar" ? "العربية" : "English"}</span>
           </h1>
-          <span className="t-caption">{episode.is_published ? d.studio.published : d.studio.unpublished}</span>
+          <span className="t-caption">{episode.is_published ? d.studio.published : scheduled ? fill(d.studio.scheduled, { day }) : d.studio.unpublished}</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Link href={previewHref} className="t-link t-caption text-ink">
             {d.admin.preview}
           </Link>
-          <form action={publish}>
-            <Button type="submit" variant={episode.is_published ? "secondary" : "primary"} className="h-10 px-5 text-[14px]">
-              {episode.is_published ? d.studio.unpublish : d.studio.publish}
-            </Button>
-          </form>
+          {episode.is_published ? (
+            <form action={publish}>
+              <Button type="submit" variant="secondary" className="h-10 px-5 text-[14px]">
+                {d.studio.unpublish}
+              </Button>
+            </form>
+          ) : scheduled ? (
+            <form action={unschedule}>
+              <Button type="submit" variant="secondary" className="h-10 px-5 text-[14px]">
+                {d.studio.cancelSchedule}
+              </Button>
+            </form>
+          ) : (
+            <>
+              <form action={schedule}>
+                <Button type="submit" variant="primary" className="h-10 px-5 text-[14px]">
+                  {fill(d.studio.publishOn, { day })}
+                </Button>
+              </form>
+              <form action={publish}>
+                <Button type="submit" variant="secondary" className="h-10 px-5 text-[14px]">
+                  {d.studio.publishNow}
+                </Button>
+              </form>
+            </>
+          )}
         </div>
       </div>
 
@@ -72,6 +98,11 @@ export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[
             <span className="t-caption">{d.studio.bodyHint}</span>
           </label>
         )}
+        <label className="flex flex-col gap-1.5 t-caption text-ink">
+          {d.studio.note}
+          <textarea name="note" defaultValue={episode.note ?? ""} rows={3} maxLength={600} className="field text-[15px]" dir={episode.lang === "ar" ? "rtl" : "ltr"} />
+          <span className="t-caption">{d.studio.noteHint}</span>
+        </label>
         <Button type="submit" variant="primary" className="self-start h-10 px-5 text-[14px]">
           {d.studio.save}
         </Button>

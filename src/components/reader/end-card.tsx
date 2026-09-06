@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { FollowButton } from "../follow-button";
 import { useLang, useT } from "../lang-provider";
 import { Button } from "../ui/button";
@@ -30,6 +30,7 @@ export function EndCard({
   following,
   signedIn,
   track = true,
+  extras,
 }: {
   kind: SeriesKind;
   seriesId: string;
@@ -47,6 +48,7 @@ export function EndCard({
   following: boolean;
   signedIn: boolean;
   track?: boolean;
+  extras?: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const d = useT();
@@ -115,6 +117,7 @@ export function EndCard({
             {d.reader.backToSeries}
           </Link>
         </div>
+        {extras && <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-3 border-t border-hair w-full">{extras}</div>}
       </div>
     </div>
   );

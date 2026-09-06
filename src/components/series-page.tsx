@@ -4,6 +4,7 @@ import { Cover } from "./cover";
 import { FollowButton } from "./follow-button";
 import { VerifiedMark } from "./icons";
 import { ShareLink } from "./share-link";
+import { ReportLink } from "./report-link";
 import { Button } from "./ui/button";
 import { SegmentedControl } from "./ui/segmented";
 import { AGE_RATING, EPISODE_WORD, RUN_STATUS, formatNumber, genreLabel, weekdayLabel, type SeriesKind } from "@/lib/constants";
@@ -138,6 +139,9 @@ export async function SeriesPage({ kind, slug, langParam }: { kind: SeriesKind; 
             </ol>
           )}
         </section>
+        <div className="flex justify-end">
+          <ReportLink seriesId={series.id} />
+        </div>
       </div>
     </div>
   );

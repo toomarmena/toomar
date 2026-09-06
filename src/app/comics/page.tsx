@@ -7,6 +7,6 @@ export async function generateMetadata() {
 }
 
 export default async function ComicsPage({ searchParams }: PageProps<"/comics">) {
-  const { genre } = await searchParams;
-  return <Listing kind="comic" genre={typeof genre === "string" ? genre : undefined} />;
+  const { genre, status } = await searchParams;
+  return <Listing kind="comic" genre={typeof genre === "string" ? genre : undefined} status={typeof status === "string" ? status : undefined} />;
 }

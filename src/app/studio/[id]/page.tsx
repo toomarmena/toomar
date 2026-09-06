@@ -5,7 +5,8 @@ import { CoverUploader } from "@/components/studio/cover-uploader";
 import { SeriesForm } from "@/components/studio/series-form";
 import { SubmitBox } from "@/components/studio/submit-box";
 import { Button } from "@/components/ui/button";
-import { EPISODE_WORD, formatNumber } from "@/lib/constants";
+import { EPISODE_WORD, formatNumber, isScheduledAhead, weekdayLabel } from "@/lib/constants";
+import { fill } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
 import { createClient, getUser } from "@/lib/supabase/server";
@@ -81,7 +82,9 @@ export default async function StudioSeriesPage({ params }: PageProps<"/studio/[i
                   <span className="w-8 t-caption text-ink">{formatNumber(e.number, lang)}</span>
                   <span className="t-caption">{e.lang === "ar" ? "ع" : "EN"}</span>
                   <span className="flex-1 truncate text-[15px] group-hover:text-blue transition-colors">{e.title || `${word} ${formatNumber(e.number, lang)}`}</span>
-                  <span className="t-caption">{e.is_published ? d.studio.published : d.studio.unpublished}</span>
+                  <span className="t-caption">
+                    {e.is_published ? d.studio.published : isScheduledAhead(e.publish_at, e.is_published) ? fill(d.studio.scheduled, { day: weekdayLabel(series.publish_day, lang) }) : d.studio.unpublished}
+                  </span>
                 </Link>
               </li>
             ))}

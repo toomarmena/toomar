@@ -7,6 +7,7 @@ import { isLang, type Lang } from "@/lib/i18n";
 import { deleteObject, deleteObjects, presignUpload } from "@/lib/r2";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { nextPublishInstant } from "@/lib/queries";
 import type { EpisodeRow, SeriesRow } from "@/lib/types";
 
 const IMAGE_TYPES = new Set(["image/webp", "image/jpeg", "image/png"]);
@@ -232,17 +233,34 @@ export async function createEpisode(seriesId: string, langRaw: string) {
 export async function updateEpisode(id: string, form: FormData) {
   const { supabase, series } = await ownEpisode(id);
   const title = String(form.get("title") ?? "").trim().slice(0, 160) || null;
+  const note = String(form.get("note") ?? "").trim().slice(0, 600) || null;
   const body = series.kind === "novel" ? String(form.get("body") ?? "").replace(/\r\n/g, "\n").slice(0, 200000) || null : undefined;
   await supabase
     .from("episodes")
-    .update(body === undefined ? { title } : { title, body })
+    .update(body === undefined ? { title, note } : { title, note, body })
     .eq("id", id);
+  revalidatePath(`/studio/${series.id}/episodes/${id}`);
+}
+
+/** Publish on the series' next publish day at 09:00 Cairo. */
+export async function scheduleEpisode(id: string) {
+  const { supabase, series } = await ownEpisode(id);
+  const when = nextPublishInstant(series.publish_day);
+  await supabase.from("episodes").update({ publish_at: when.toISOString(), is_published: false }).eq("id", id);
+  revalidatePath(`/studio/${series.id}`);
+  revalidatePath(`/studio/${series.id}/episodes/${id}`);
+}
+
+export async function unscheduleEpisode(id: string) {
+  const { supabase, series } = await ownEpisode(id);
+  await supabase.from("episodes").update({ publish_at: null }).eq("id", id);
+  revalidatePath(`/studio/${series.id}`);
   revalidatePath(`/studio/${series.id}/episodes/${id}`);
 }
 
 export async function setEpisodePublished(id: string, published: boolean) {
   const { supabase, series } = await ownEpisode(id);
-  await supabase.from("episodes").update({ is_published: published }).eq("id", id);
+  await supabase.from("episodes").update({ is_published: published, publish_at: null }).eq("id", id);
   revalidatePath(`/studio/${series.id}`);
   revalidatePath(`/studio/${series.id}/episodes/${id}`);
   revalidatePath("/");

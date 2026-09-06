@@ -3,10 +3,13 @@ import { ReaderChrome } from "./chrome";
 import { ComicStrip } from "./strip";
 import { EndCard } from "./end-card";
 import { NovelText } from "./novel-text";
+import { CreatorNote } from "./creator-note";
+import { LikeButton } from "./like-button";
+import { ReportLink } from "../report-link";
 import { EPISODE_WORD, formatNumber, type SeriesKind } from "@/lib/constants";
 import { isLang, type Lang } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
-import { getEpisode, getNeighbours, getSeriesById, getSeriesBySlug, isFollowing, listEpisodeImages } from "@/lib/queries";
+import { getEpisode, getNeighbours, getSeriesById, getSeriesBySlug, hasReacted, isFollowing, listEpisodeImages } from "@/lib/queries";
 import { creatorHref } from "@/lib/links";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { mediaUrl } from "@/lib/media";
@@ -42,7 +45,8 @@ export async function ReaderPage({
   const base = isPreview ? `/preview/${series.id}` : `/${kind === "comic" ? "comics" : "novels"}/${series.slug}`;
   const backHref = isPreview ? `/studio/${series.id}` : `${base}?lang=${contentLang}`;
   const user = await getUser().catch(() => null);
-  const [neighbours, following] = await Promise.all([getNeighbours(series.id, number, contentLang, isPreview), isFollowing(user?.id ?? null, series.id)]);
+  const [neighbours, following, liked] = await Promise.all([getNeighbours(series.id, number, contentLang, isPreview), isFollowing(user?.id ?? null, series.id), hasReacted(user?.id ?? null, episode.id)]);
+  const here = `${base}/${number}?lang=${contentLang}`;
   const href = (n: number | null) => (n ? `${base}/${n}?lang=${contentLang}` : null);
 
   const word = EPISODE_WORD[kind][ui];
@@ -83,6 +87,7 @@ export async function ReaderPage({
       contentLang={contentLang}
     >
       {content}
+      {episode.note && <CreatorNote note={episode.note} name={series.creator.name} avatarUrl={series.creator.avatarUrl} href={creatorHref(series.creator)} d={d} lang={contentLang} />}
       <EndCard
         kind={kind}
         seriesId={series.id}
@@ -99,6 +104,14 @@ export async function ReaderPage({
         track={!isPreview}
         following={following}
         signedIn={!!user}
+        extras={
+          isPreview ? null : (
+            <>
+              <LikeButton episodeId={episode.id} initial={liked} signedIn={!!user} next={here} />
+              <ReportLink seriesId={series.id} episodeId={episode.id} />
+            </>
+          )
+        }
       />
       <span className="sr-only">{d.reader.endOfSeries}</span>
     </ReaderChrome>

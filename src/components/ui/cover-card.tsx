@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Cover } from "../cover";
 import { VerifiedMark } from "../icons";
-import { useLang } from "../lang-provider";
+import { useLang, useT } from "../lang-provider";
 import { weekdayLabel } from "@/lib/constants";
 import { seriesHref } from "@/lib/links";
 import type { SeriesSummary } from "@/lib/types";
@@ -16,6 +16,7 @@ import type { SeriesSummary } from "@/lib/types";
  */
 export function CoverCard({ series, priority = false, compact = false }: { series: SeriesSummary; priority?: boolean; compact?: boolean }) {
   const lang = useLang();
+  const d = useT();
   return (
     <Link href={seriesHref(series)} className="group flex flex-col gap-2.5 text-ink">
       <div className="book-host">
@@ -37,6 +38,12 @@ export function CoverCard({ series, priority = false, compact = false }: { serie
               </span>
               <span aria-hidden>·</span>
               <span>{weekdayLabel(series.publishDay, lang)}</span>
+              {series.fresh && (
+                <>
+                  <span aria-hidden>·</span>
+                  <span className="text-ink">{d.series.newLabel}</span>
+                </>
+              )}
             </span>
             <span className={`t-micro ${series.kind === "novel" ? "text-violet" : ""}`} dir="ltr">
               {series.kind === "novel" ? "novels" : "web comics"}

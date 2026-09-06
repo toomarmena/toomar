@@ -38,8 +38,10 @@ export type SeriesSummary = {
   languages: Lang[];
   runStatus: RunStatus;
   ageRating: AgeRating;
-  /** Short description in the interface language, for the hover peek. */
+  /** Short description in the interface language. */
   description: string | null;
+  /** Latest episode went live within the last three days. */
+  fresh: boolean;
 };
 
 export type SeriesDetail = SeriesSummary & {
@@ -118,6 +120,7 @@ export type EpisodeStats = {
   openers: number;
   completers: number;
   returned: number;
+  liked: number;
 };
 
 export type EpisodeRow = {
@@ -129,8 +132,20 @@ export type EpisodeRow = {
   body: string | null;
   is_published: boolean;
   published_at: string | null;
+  publish_at: string | null;
+  note: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type ReportRow = {
+  id: string;
+  series_id: string;
+  episode_id: string | null;
+  reporter_id: string | null;
+  reason: string;
+  created_at: string;
+  resolved_at: string | null;
 };
 
 export type EpisodeImageRow = {

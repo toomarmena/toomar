@@ -65,6 +65,11 @@ export const SOCIAL_KEYS = ["instagram", "x", "facebook", "youtube", "tiktok", "
 export type SocialKey = (typeof SOCIAL_KEYS)[number];
 export type SocialLinks = Partial<Record<SocialKey, string>>;
 
+/** True when a scheduled time lies ahead. Kept outside components so renders stay pure. */
+export function isScheduledAhead(publishAt: string | null, isPublished: boolean) {
+  return !isPublished && !!publishAt && Date.parse(publishAt) > Date.now();
+}
+
 const ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
 export function arabicNumber(n: number) {
   return String(n).replace(/\d/g, (d) => ARABIC_DIGITS[Number(d)]);

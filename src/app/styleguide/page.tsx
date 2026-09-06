@@ -29,6 +29,7 @@ const sample: SeriesSummary = {
   runStatus: "ongoing",
   ageRating: "all",
   description: "في مدينة تجفّ فيها الأنهار واحداً بعد الآخر، تكتشف فتاة أن النيل الأخير يجري تحت بيتها.",
+  fresh: true,
 };
 const novel: SeriesSummary = { ...sample, id: "n", kind: "novel", title: "ميدان الساعة", creator: { ...sample.creator, name: "يوسف ع." }, publishDay: 6 };
 

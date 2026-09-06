@@ -79,6 +79,12 @@ export async function transferSeries(seriesId: string, form: FormData) {
   redirect("/admin?transfer=ok");
 }
 
+export async function resolveReport(id: string) {
+  const db = await requireAdmin();
+  await db.from("reports").update({ resolved_at: new Date().toISOString() }).eq("id", id);
+  revalidatePath("/admin");
+}
+
 export async function setupStorage(): Promise<string> {
   await requireAdmin();
   const h = await headers();
