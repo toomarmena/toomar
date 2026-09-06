@@ -2,6 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Aref_Ruqaa, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/shell";
+import { LangProvider } from "@/components/lang-provider";
+import { getLang } from "@/lib/lang-server";
+import { getProfile } from "@/lib/supabase/server";
 
 const display = Aref_Ruqaa({
   variable: "--font-display",
@@ -29,11 +32,17 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const lang = await getLang();
+  const profile = await getProfile().catch(() => null);
   return (
-    <html lang="ar" dir="rtl" className={`${display.variable} ${body.variable} h-full antialiased`}>
+    <html lang={lang} dir={lang === "ar" ? "rtl" : "ltr"} className={`${display.variable} ${body.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <Shell>{children}</Shell>
+        <LangProvider lang={lang}>
+          <Shell signedIn={!!profile} role={profile?.role ?? null}>
+            {children}
+          </Shell>
+        </LangProvider>
       </body>
     </html>
   );

@@ -51,3 +51,8 @@ const ARABIC_DIGITS = "٠١٢٣٤٥٦٧٨٩";
 export function arabicNumber(n: number) {
   return String(n).replace(/\d/g, (d) => ARABIC_DIGITS[Number(d)]);
 }
+
+/** Eastern Arabic digits in the Arabic interface, Western otherwise. */
+export function formatNumber(n: number, lang: "ar" | "en" = "ar") {
+  return lang === "ar" ? arabicNumber(n) : String(n);
+}
