@@ -4,15 +4,15 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { FollowButton } from "../follow-button";
 import { useLang, useT } from "../lang-provider";
+import { Button } from "../ui/button";
 import { anonId } from "./chrome";
 import { recordEvent } from "@/app/reader-actions";
 import { EPISODE_WORD, formatNumber, weekdayLabel, type RunStatus, type SeriesKind } from "@/lib/constants";
-import { ShareRow } from "../share-row";
 import { fill } from "@/lib/i18n";
 
 /**
- * "يُتبع…": closes every episode. Records completion when it scrolls into
- * view and prefetches the start of the next episode.
+ * «يُتبع…» closes every episode on a quiet ground. Records completion
+ * when it scrolls into view and prefetches the start of the next episode.
  */
 export function EndCard({
   kind,
@@ -21,11 +21,12 @@ export function EndCard({
   number,
   publishDay,
   runStatus,
+  prevHref,
   nextHref,
   nextPreview,
   seriesHref,
-  seriesTitle,
   creatorName,
+  creatorHref,
   following,
   signedIn,
   track = true,
@@ -36,11 +37,13 @@ export function EndCard({
   number: number;
   publishDay: number;
   runStatus: RunStatus;
+  prevHref: string | null;
   nextHref: string | null;
   nextPreview: string[];
   seriesHref: string;
-  seriesTitle: string;
+  seriesTitle?: string;
   creatorName: string;
+  creatorHref: string;
   following: boolean;
   signedIn: boolean;
   track?: boolean;
@@ -74,30 +77,43 @@ export function EndCard({
     return () => io.disconnect();
   }, [seriesId, episodeId, nextPreview, track]);
 
+  const line = nextHref
+    ? fill(d.reader.nextReady, { what: word, n: formatNumber(number + 1, ui) })
+    : runStatus === "completed"
+      ? d.reader.storyEnded
+      : runStatus === "hiatus"
+        ? d.reader.storyPaused
+        : fill(d.reader.nextOn, { what: word, n: formatNumber(number + 1, ui), day: weekdayLabel(publishDay, ui) });
+
   return (
-    <div ref={ref} className="mx-auto w-full max-w-[800px] flex flex-col items-center gap-4 px-5 py-10 border-t border-hair bg-surface">
-      <span className="font-display text-[44px] leading-none text-ink">{d.reader.toBeContinued}</span>
-      <span className="text-[13px] text-muted text-center">
-        {nextHref
-          ? fill(d.reader.nextReady, { what: word, n: formatNumber(number + 1, ui) })
-          : runStatus === "completed"
-            ? d.reader.storyEnded
-            : runStatus === "hiatus"
-              ? d.reader.storyPaused
-              : fill(d.reader.nextOn, { what: word, n: formatNumber(number + 1, ui), day: weekdayLabel(publishDay, ui) })}
-      </span>
-      <div className="flex flex-col gap-2.5 w-full max-w-[420px] pt-1">
-        {nextHref ? (
-          <Link href={nextHref} className="flex items-center justify-center h-12 bg-blue text-white font-bold text-[15px] hover:bg-blue-deep">
-            {d.reader.readNext}
+    <div ref={ref} className="bg-paper-2 border-t border-hair">
+      <div className="mx-auto w-full max-w-[420px] flex flex-col items-center gap-4 px-5 py-12 text-center">
+        <span className="font-display text-[40px] leading-none text-ink">{d.reader.toBeContinued}</span>
+        <span className="t-caption">{line}</span>
+        <div className="flex flex-col items-stretch gap-3 w-full pt-2">
+          {nextHref ? (
+            <>
+              <Button href={nextHref} variant="primary" block>
+                {d.reader.readNext}
+              </Button>
+              {!following && <FollowButton seriesId={seriesId} initial={following} signedIn={signedIn} next={seriesHref} block />}
+            </>
+          ) : (
+            <FollowButton seriesId={seriesId} initial={following} signedIn={signedIn} next={seriesHref} variant="primary" block />
+          )}
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 pt-1 t-caption">
+          <Link href={creatorHref} className="t-link text-ink">
+            {fill(d.reader.support, { name: creatorName })}
           </Link>
-        ) : null}
-        <FollowButton seriesId={seriesId} initial={following} signedIn={signedIn} next={seriesHref} variant="primary" block />
-        <Link href={seriesHref} className="flex items-center justify-center h-12 border-[1.5px] border-hair text-ink font-semibold text-[15px] hover:border-ink">
-          {d.reader.backToSeries}
-        </Link>
-        <div className="flex justify-center pt-2">
-          <ShareRow path={seriesHref.split("?")[0]} title={seriesTitle} creator={creatorName} compact />
+          {prevHref && (
+            <Link href={prevHref} className="t-link text-ink">
+              {d.reader.prev}
+            </Link>
+          )}
+          <Link href={seriesHref} className="t-link text-ink">
+            {d.reader.backToSeries}
+          </Link>
         </div>
       </div>
     </div>

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { IconArrowLeft, IconBack, IconLibrary } from "../icons";
-import { useLang, useT } from "../lang-provider";
+import { IconBack, IconLibrary } from "../icons";
+import { useT } from "../lang-provider";
 import { recordEvent, saveProgress } from "@/app/reader-actions";
 
 export function anonId() {
@@ -21,28 +21,25 @@ export function anonId() {
 }
 
 /**
- * Full-screen reading surface. The bars hide while scrolling down and
- * return on scroll up or tap, so the strip owns the screen.
+ * Full-screen reading surface: a 56px top bar that hides while scrolling
+ * down and returns on scroll up or tap. The strip owns the screen.
  */
 export function ReaderChrome({
   title,
   subtitle,
   backHref,
-  prevHref,
-  nextHref,
   seriesId,
   episodeId,
   number,
   contentLang,
-  tone = "light",
   track = true,
   children,
 }: {
   title: string;
   subtitle: string;
   backHref: string;
-  prevHref: string | null;
-  nextHref: string | null;
+  prevHref?: string | null;
+  nextHref?: string | null;
   seriesId: string;
   episodeId: string;
   number: number;
@@ -55,7 +52,6 @@ export function ReaderChrome({
   const lastY = useRef(0);
   const ticking = useRef(false);
   const d = useT();
-  const ui = useLang();
 
   useEffect(() => {
     if (!track) return;
@@ -87,44 +83,24 @@ export function ReaderChrome({
     setVisible((v) => !v);
   };
 
-  const bar = `fixed inset-x-0 z-40 transition-transform duration-200 ${tone === "paper" ? "bg-[#FBFAF7]" : "bg-white"}`;
-  const Prev = ui === "ar" ? IconBack : IconArrowLeft;
-  const Next = ui === "ar" ? IconArrowLeft : IconBack;
-
   return (
-    <div className={`min-h-screen ${tone === "paper" ? "bg-[#FBFAF7]" : "bg-white"}`} onClick={onTap}>
-      <header className={`${bar} top-0 border-b border-hair ${visible ? "translate-y-0" : "-translate-y-full"}`}>
-        <div className="mx-auto max-w-[800px] flex items-center justify-between gap-3 px-3 py-2.5">
-          <Link href={backHref} className="flex items-center gap-2.5 min-w-0 text-ink" aria-label={d.reader.backToSeries}>
-            <IconBack width={22} height={22} className="shrink-0" />
+    <div className="min-h-screen bg-paper" onClick={onTap}>
+      <header className={`fixed inset-x-0 top-0 z-40 h-14 bg-paper border-b border-hair transition-transform duration-200 ${visible ? "translate-y-0" : "-translate-y-full"}`}>
+        <div className="mx-auto max-w-[800px] h-full flex items-center justify-between gap-3 px-4">
+          <Link href={backHref} className="flex items-center gap-3 min-w-0 text-ink" aria-label={d.reader.backToSeries}>
+            <IconBack width={22} height={22} strokeWidth={1.75} className="shrink-0" />
             <span className="flex flex-col min-w-0">
-              <span className="text-sm font-semibold truncate">{title}</span>
+              <span className="font-display text-[15px] leading-tight truncate">{title}</span>
               <span className="text-[11px] text-muted truncate">{subtitle}</span>
             </span>
           </Link>
-          <Link href="/library" className="p-2 text-ink" aria-label={d.nav.library}>
-            <IconLibrary width={20} height={20} />
+          <Link href="/library" className="p-2 -me-2 text-ink-2 hover:text-blue transition-colors" aria-label={d.nav.library}>
+            <IconLibrary width={20} height={20} strokeWidth={1.75} />
           </Link>
         </div>
       </header>
 
-      <div className="pt-[58px] pb-[64px]">{children}</div>
-
-      <nav className={`${bar} bottom-0 border-t border-hair pb-safe ${visible ? "translate-y-0" : "translate-y-full"}`}>
-        <div className="mx-auto max-w-[800px] flex items-center justify-between px-2 py-1.5 text-sm font-semibold">
-          <Link href={prevHref ?? "#"} aria-disabled={!prevHref} className={`flex items-center gap-1.5 px-3 py-2 ${prevHref ? "text-ink" : "text-hair pointer-events-none"}`}>
-            <Prev width={18} height={18} />
-            {d.reader.prev}
-          </Link>
-          <Link href={backHref} className="px-3 py-2 text-muted text-xs">
-            {d.reader.backToSeries}
-          </Link>
-          <Link href={nextHref ?? "#"} aria-disabled={!nextHref} className={`flex items-center gap-1.5 px-3 py-2 ${nextHref ? "text-ink" : "text-hair pointer-events-none"}`}>
-            {d.reader.next}
-            <Next width={18} height={18} />
-          </Link>
-        </div>
-      </nav>
+      <div className="pt-14">{children}</div>
     </div>
   );
 }

@@ -35,7 +35,7 @@ export function ComicStrip({ images }: { images: EpisodeImage[] }) {
   }, [images]);
 
   return (
-    <div ref={root} className="mx-auto w-full max-w-[800px] bg-white">
+    <div ref={root} className="mx-auto w-full max-w-[800px] bg-paper">
       {images.map((img, i) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img

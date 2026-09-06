@@ -7,6 +7,7 @@ import { EPISODE_WORD, formatNumber, type SeriesKind } from "@/lib/constants";
 import { isLang, type Lang } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
 import { getEpisode, getNeighbours, getSeriesById, getSeriesBySlug, isFollowing, listEpisodeImages } from "@/lib/queries";
+import { creatorHref } from "@/lib/links";
 import { createClient, getUser } from "@/lib/supabase/server";
 import { mediaUrl } from "@/lib/media";
 
@@ -76,13 +77,10 @@ export async function ReaderPage({
       subtitle={subtitle}
       backHref={backHref}
       track={!isPreview}
-      prevHref={href(neighbours.prev)}
-      nextHref={href(neighbours.next)}
       seriesId={series.id}
       episodeId={episode.id}
       number={number}
       contentLang={contentLang}
-      tone={kind === "novel" ? "paper" : "light"}
     >
       {content}
       <EndCard
@@ -92,8 +90,9 @@ export async function ReaderPage({
         number={number}
         publishDay={series.publishDay}
         runStatus={series.runStatus}
-        seriesTitle={title}
         creatorName={series.creator.name}
+        creatorHref={creatorHref(series.creator)}
+        prevHref={href(neighbours.prev)}
         nextHref={href(neighbours.next)}
         nextPreview={nextPreview}
         seriesHref={backHref}

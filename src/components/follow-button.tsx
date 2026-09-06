@@ -29,7 +29,7 @@ export function FollowButton({ seriesId, initial, signedIn, next, variant = "sec
 
   return (
     <Button variant={following ? "secondary" : variant} block={block} onClick={onClick} disabled={pending} aria-pressed={following} className={following ? "border-ink" : ""}>
-      {following ? d.series.following : d.series.follow}
+      {following ? d.series.following : variant === "primary" ? d.reader.remind : d.series.follow}
     </Button>
   );
 }
