@@ -73,7 +73,7 @@ export function ComicPages({ images, dir, children }: { images: EpisodeImage[]; 
 
   return (
     <>
-      <div ref={scroller} dir={dir} className="flex h-[calc(100dvh-6rem)] overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory no-scrollbar bg-paper">
+      <div ref={scroller} dir={dir} className="flex h-[calc(100dvh-6rem-env(safe-area-inset-bottom))] overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory no-scrollbar bg-paper">
         {images.map((img, i) => (
           <div key={img.id} className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -94,7 +94,7 @@ export function ComicPages({ images, dir, children }: { images: EpisodeImage[]; 
         <div className="w-full h-full shrink-0 snap-center snap-always overflow-y-auto">{children}</div>
       </div>
 
-      <div className="fixed bottom-0 inset-x-0 z-30 h-10 bg-paper border-t border-hair flex items-center justify-center gap-8">
+      <div className="fixed bottom-0 inset-x-0 z-30 h-10 pb-safe box-content bg-paper border-t border-hair flex items-center justify-center gap-8">
         <button type="button" onClick={() => go(-1)} disabled={index === 0} className="t-link t-caption text-ink disabled:opacity-40 disabled:no-underline" aria-label={d.reader.prev}>
           {d.common.back}
         </button>
