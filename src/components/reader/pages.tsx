@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { formatNumber } from "@/lib/constants";
 import { useLang, useT } from "../lang-provider";
 import type { EpisodeImage } from "@/lib/types";
@@ -13,9 +13,19 @@ import type { EpisodeImage } from "@/lib/types";
 export function ComicPages({ images, dir, children }: { images: EpisodeImage[]; dir: "rtl" | "ltr"; children: ReactNode }) {
   const scroller = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
+  const indexRef = useRef(0);
   const ui = useLang();
   const d = useT();
   const total = images.length;
+  // Panels are the pages plus the closing card.
+  const last = total;
+  // Right-to-left scrollers count their offset downward from zero.
+  const sign = dir === "rtl" ? -1 : 1;
+
+  const at = useCallback((i: number) => {
+    indexRef.current = i;
+    setIndex(i);
+  }, []);
 
   useEffect(() => {
     const el = scroller.current;
@@ -26,8 +36,7 @@ export function ComicPages({ images, dir, children }: { images: EpisodeImage[]; 
       raf = requestAnimationFrame(() => {
         raf = 0;
         const w = el.clientWidth || 1;
-        // In right-to-left scrollers the offset runs negative; the distance is what matters.
-        setIndex(Math.round(Math.abs(el.scrollLeft) / w));
+        at(Math.round(Math.abs(el.scrollLeft) / w));
       });
     };
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -35,14 +44,19 @@ export function ComicPages({ images, dir, children }: { images: EpisodeImage[]; 
       el.removeEventListener("scroll", onScroll);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [at]);
 
-  const go = (step: number) => {
-    const el = scroller.current;
-    if (!el) return;
-    const sign = dir === "rtl" ? -1 : 1;
-    el.scrollBy({ left: sign * step * el.clientWidth, behavior: "smooth" });
-  };
+  /** Always scrolls to a whole page, so a tapped arrow never lands between two. */
+  const go = useCallback(
+    (step: number) => {
+      const el = scroller.current;
+      if (!el) return;
+      const next = Math.min(last, Math.max(0, indexRef.current + step));
+      at(next);
+      el.scrollTo({ left: sign * next * el.clientWidth, behavior: "smooth" });
+    },
+    [at, last, sign],
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -53,23 +67,22 @@ export function ComicPages({ images, dir, children }: { images: EpisodeImage[]; 
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dir]);
+  }, [dir, go]);
 
-  const onEnd = index >= total;
+  const onEnd = index >= last;
 
   return (
     <>
       <div ref={scroller} dir={dir} className="flex h-[calc(100dvh-6rem)] overflow-x-auto overflow-y-hidden overscroll-x-contain snap-x snap-mandatory no-scrollbar bg-paper">
         {images.map((img, i) => (
-          <div key={img.id} className="w-full h-full shrink-0 snap-center flex items-center justify-center">
+          <div key={img.id} className="w-full h-full shrink-0 snap-center snap-always flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={img.url}
               width={img.width}
               height={img.height}
               alt=""
-              // The current page and the two after it are fetched; the rest wait.
+              // The page in view and the two after it are fetched; the rest wait.
               loading={i <= index + 2 ? "eager" : "lazy"}
               fetchPriority={i === 0 ? "high" : "auto"}
               decoding="async"
@@ -78,7 +91,7 @@ export function ComicPages({ images, dir, children }: { images: EpisodeImage[]; 
             />
           </div>
         ))}
-        <div className="w-full h-full shrink-0 snap-center overflow-y-auto">{children}</div>
+        <div className="w-full h-full shrink-0 snap-center snap-always overflow-y-auto">{children}</div>
       </div>
 
       <div className="fixed bottom-0 inset-x-0 z-30 h-10 bg-paper border-t border-hair flex items-center justify-center gap-8">
