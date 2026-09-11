@@ -41,6 +41,7 @@ async function comic() {
         genre: "fantasy",
         publish_day: "thursday",
         languages: ["ar", "en"],
+        layouts: ["vertical", "horizontal"],
         creator_email: "test-creator@example.com",
         creator_name: "نور محمود",
         creator_verified: true,
@@ -58,6 +59,13 @@ async function comic() {
       for (let i = 0; i < panels; i++) {
         const h = [1400, 1800, 1000, 2200][i % 4];
         await sharp(Buffer.from(panelSvg(1080, h, i, ep, lang === "ar" ? "TEST STRIP" : "TEST STRIP EN"))).jpeg({ quality: 90 }).toFile(join(dir, `${String(i + 1).padStart(2, "0")}.jpg`));
+      }
+      // The same episode as single pages, for the horizontal reader.
+      const pagesDir = join(dir, "horizontal");
+      mkdirSync(pagesDir, { recursive: true });
+      for (let i = 0; i < 6; i++) {
+        const [w, h] = i % 3 === 2 ? [2000, 1400] : [1000, 1400];
+        await sharp(Buffer.from(panelSvg(w, h, i, ep, lang === "ar" ? "TEST PAGE" : "TEST PAGE EN"))).jpeg({ quality: 90 }).toFile(join(pagesDir, `${String(i + 1).padStart(2, "0")}.jpg`));
       }
     }
   }

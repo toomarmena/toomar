@@ -37,6 +37,22 @@ export function weekdayLabel(day: number, lang: "ar" | "en" = "ar") {
 
 export type SeriesKind = "comic" | "novel";
 
+/** How a comic is drawn and read: one long strip, or page after page. */
+export const LAYOUTS = [
+  { key: "vertical", ar: "شريط رأسي", en: "Vertical strip" },
+  { key: "horizontal", ar: "صفحات أفقية", en: "Horizontal pages" },
+] as const;
+
+export type ComicLayout = (typeof LAYOUTS)[number]["key"];
+
+export function layoutLabel(key: ComicLayout, lang: "ar" | "en" = "ar") {
+  return LAYOUTS.find((l) => l.key === key)?.[lang] ?? key;
+}
+
+export function isLayout(v: unknown): v is ComicLayout {
+  return v === "vertical" || v === "horizontal";
+}
+
 export const KIND_LABEL: Record<SeriesKind, { ar: string; en: string }> = {
   comic: { ar: "قصص مصوّرة", en: "Web Comics" },
   novel: { ar: "روايات", en: "Novels" },

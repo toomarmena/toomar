@@ -9,7 +9,7 @@ export type Prepared = { blob: Blob; width: number; height: number; contentType:
 
 const MAX_CANVAS_HEIGHT = 16000; // browsers refuse larger canvases; tall strips get split by the creator
 
-export async function prepareImage(file: File, maxWidth: number, quality = 0.86, aspect?: number): Promise<Prepared> {
+export async function prepareImage(file: File, maxWidth: number, quality = 0.86, aspect?: number, fitLongest = false): Promise<Prepared> {
   const bitmap = await createImageBitmap(file);
   try {
     // Optional centre crop to a fixed ratio (covers are always 2:3).
@@ -18,7 +18,9 @@ export async function prepareImage(file: File, maxWidth: number, quality = 0.86,
       if (sw / sh > aspect) { sw = Math.round(sh * aspect); sx = Math.round((bitmap.width - sw) / 2); }
       else { sh = Math.round(sw / aspect); sy = Math.round((bitmap.height - sh) / 2); }
     }
-    const scale = Math.min(1, maxWidth / sw);
+    // Strips are capped by width; single pages by their longest side, so a tall
+    // page does not end up taller than the screen can decode comfortably.
+    const scale = Math.min(1, maxWidth / (fitLongest ? Math.max(sw, sh) : sw));
     const width = Math.round(sw * scale);
     const height = Math.round(sh * scale);
     if (height > MAX_CANVAS_HEIGHT) {

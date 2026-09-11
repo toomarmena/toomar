@@ -1,6 +1,7 @@
 "use client";
 
-import { AGE_RATING, GENRES, RUN_STATUS, WEEK_ORDER, weekdayLabel } from "@/lib/constants";
+import { useState } from "react";
+import { AGE_RATING, GENRES, LAYOUTS, RUN_STATUS, WEEK_ORDER, weekdayLabel, type SeriesKind } from "@/lib/constants";
 import type { SeriesRow } from "@/lib/types";
 import { useLang, useT } from "../lang-provider";
 import { Button } from "../ui/button";
@@ -11,6 +12,9 @@ export function SeriesForm({ action, series, error }: { action: (form: FormData)
   const d = useT();
   const lang = useLang();
   const editing = !!series;
+  // Only comics have a reading layout, so the field follows the kind being chosen.
+  const [kind, setKind] = useState<SeriesKind>(series?.kind ?? "comic");
+  const layouts = series?.layouts ?? ["vertical"];
 
   return (
     <form action={action} className="flex flex-col gap-5 max-w-[560px]">
@@ -20,7 +24,7 @@ export function SeriesForm({ action, series, error }: { action: (form: FormData)
           <div className="flex gap-6 text-[15px]">
             {(["comic", "novel"] as const).map((k) => (
               <label key={k} className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" name="kind" value={k} defaultChecked={k === "comic"} className="accent-ink" />
+                <input type="radio" name="kind" value={k} defaultChecked={k === "comic"} onChange={() => setKind(k)} className="accent-ink" />
                 {k === "comic" ? d.studio.comic : d.studio.novel}
               </label>
             ))}
@@ -108,6 +112,21 @@ export function SeriesForm({ action, series, error }: { action: (form: FormData)
           </label>
         </div>
       </fieldset>
+
+      {kind === "comic" && (
+        <fieldset className="flex flex-col gap-1.5">
+          <legend className="t-caption text-ink mb-1.5">{d.studio.layouts}</legend>
+          <div className="flex flex-col gap-1.5 text-[15px]">
+            {LAYOUTS.map((l) => (
+              <label key={l.key} className="flex items-center gap-2">
+                <input type="checkbox" name="layouts" value={l.key} defaultChecked={layouts.includes(l.key)} className="accent-ink" />
+                {l[lang]}
+              </label>
+            ))}
+          </div>
+          <span className="t-caption">{d.studio.layoutsHint}</span>
+        </fieldset>
+      )}
 
       {error && (
         <p role="alert" className="t-caption text-ink">

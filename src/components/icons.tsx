@@ -79,6 +79,21 @@ export function VerifiedMark({ className = "", size = 14, onDark = false }: { cl
   );
 }
 
+/** Rows stacked downward: the vertical strip. */
+export const IconLayoutVertical = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="4" y="3" width="16" height="7" />
+    <rect x="4" y="14" width="16" height="7" />
+  </svg>
+);
+/** Panels side by side: horizontal pages. */
+export const IconLayoutHorizontal = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3" y="4" width="7" height="16" />
+    <rect x="14" y="4" width="7" height="16" />
+  </svg>
+);
+
 // ---- social and sharing ----
 export const IconShare = (p: P) => (
   <svg {...base(p)}>

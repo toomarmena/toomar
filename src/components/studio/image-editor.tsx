@@ -4,12 +4,13 @@ import { useRef, useState } from "react";
 import { addImage, deleteImage, presignImage, reorderImages } from "@/app/studio/actions";
 import { prepareImage, putToR2, sortFilesNaturally } from "@/lib/image-client";
 import { fill } from "@/lib/i18n";
+import type { ComicLayout } from "@/lib/constants";
 import type { EpisodeImage } from "@/lib/types";
 import { useT } from "../lang-provider";
 import { Button } from "../ui/button";
 
-/** Upload, reorder and remove the images of a comic episode. */
-export function ImageEditor({ episodeId, initial, publicBase }: { episodeId: string; initial: EpisodeImage[]; publicBase: string }) {
+/** Upload, reorder and remove one layout's images for a comic episode. */
+export function ImageEditor({ episodeId, initial, publicBase, layout = "vertical" }: { episodeId: string; initial: EpisodeImage[]; publicBase: string; layout?: ComicLayout }) {
   const [images, setImages] = useState(initial);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -23,10 +24,11 @@ export function ImageEditor({ episodeId, initial, publicBase }: { episodeId: str
     setProgress({ done: 0, total: files.length });
     try {
       for (let i = 0; i < files.length; i++) {
-        const img = await prepareImage(files[i], 1080);
-        const { url, headers, key } = await presignImage(episodeId, img.contentType);
+        const pages = layout === "horizontal";
+        const img = await prepareImage(files[i], pages ? 1600 : 1080, 0.86, undefined, pages);
+        const { url, headers, key } = await presignImage(episodeId, img.contentType, layout);
         await putToR2(url, headers, img.blob);
-        const id = await addImage(episodeId, key, img.width, img.height, img.blob.size);
+        const id = await addImage(episodeId, key, img.width, img.height, img.blob.size, layout);
         setImages((prev) => [...prev, { id, url: `${publicBase}/${key}`, width: img.width, height: img.height }]);
         setProgress({ done: i + 1, total: files.length });
       }
@@ -62,7 +64,7 @@ export function ImageEditor({ episodeId, initial, publicBase }: { episodeId: str
         <Button variant="primary" disabled={!!progress} onClick={() => fileRef.current?.click()} className="h-10 px-5 text-[14px]">
           {progress ? fill(d.studio.uploading, progress) : d.studio.addImages}
         </Button>
-        <span className="t-caption">{d.studio.imagesHint}</span>
+        <span className="t-caption">{layout === "horizontal" ? d.studio.pagesHint : d.studio.imagesHint}</span>
       </div>
       {error && (
         <p role="alert" className="t-caption text-ink">

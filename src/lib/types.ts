@@ -1,4 +1,4 @@
-import type { AgeRating, GenreKey, RunStatus, SeriesKind, SocialLinks } from "./constants";
+import type { AgeRating, ComicLayout, GenreKey, RunStatus, SeriesKind, SocialLinks } from "./constants";
 import type { Lang } from "./i18n";
 
 export type Creator = {
@@ -61,6 +61,9 @@ export type EpisodeListItem = {
 
 export type EpisodeImage = { id: string; url: string; width: number; height: number };
 
+/** An episode's images, kept apart by the layout they were drawn for. */
+export type EpisodeImages = Record<ComicLayout, EpisodeImage[]>;
+
 /** Raw row of the series_cards view. */
 export type SeriesCardRow = {
   id: string;
@@ -103,6 +106,7 @@ export type SeriesRow = {
   description_ar: string | null;
   description_en: string | null;
   languages: Lang[];
+  layouts: ComicLayout[];
   adaptation_of: string | null;
   featured_rank: number | null;
   created_at: string;
@@ -156,4 +160,5 @@ export type EpisodeImageRow = {
   width: number;
   height: number;
   bytes: number | null;
+  layout: ComicLayout;
 };

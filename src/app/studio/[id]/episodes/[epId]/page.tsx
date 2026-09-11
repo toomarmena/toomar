@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { ConfirmButton } from "@/components/studio/confirm-button";
 import { ImageEditor } from "@/components/studio/image-editor";
 import { Button } from "@/components/ui/button";
-import { EPISODE_WORD, formatNumber, isScheduledAhead, weekdayLabel } from "@/lib/constants";
+import { EPISODE_WORD, formatNumber, isScheduledAhead, layoutLabel, weekdayLabel, type ComicLayout } from "@/lib/constants";
 import { fill } from "@/lib/i18n";
 import { getDict } from "@/lib/lang-server";
 import { mediaUrl } from "@/lib/media";
@@ -26,7 +26,9 @@ export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[
   const series = sData as SeriesRow | null;
   const episode = eData as EpisodeRow | null;
   if (!series || !episode || episode.series_id !== series.id) notFound();
-  const images = ((iData ?? []) as EpisodeImageRow[]).map((i) => ({ id: i.id, url: mediaUrl(i.key)!, width: i.width, height: i.height }));
+  const rows = ((iData ?? []) as EpisodeImageRow[]).sort((a, b) => a.position - b.position);
+  const imagesFor = (l: ComicLayout) => rows.filter((i) => (i.layout ?? "vertical") === l).map((i) => ({ id: i.id, url: mediaUrl(i.key)!, width: i.width, height: i.height }));
+  const layouts: ComicLayout[] = series.layouts?.length ? series.layouts : ["vertical"];
   const publicBase = (process.env.R2_PUBLIC_URL ?? "").replace(/\/$/, "");
 
   const word = EPISODE_WORD[series.kind][lang];
@@ -108,12 +110,16 @@ export default async function EpisodeEditorPage({ params }: PageProps<"/studio/[
         </Button>
       </form>
 
-      {series.kind === "comic" && (
-        <section className="flex flex-col gap-4">
-          <h2 className="t-h2 pb-4 border-b border-hair">{d.studio.images}</h2>
-          <ImageEditor episodeId={episode.id} initial={images} publicBase={publicBase} />
-        </section>
-      )}
+      {series.kind === "comic" &&
+        layouts.map((l) => (
+          <section key={l} className="flex flex-col gap-4">
+            <h2 className="t-h2 pb-4 border-b border-hair">
+              {d.studio.images}
+              {layouts.length > 1 && <span className="t-caption ms-3">{layoutLabel(l, lang)}</span>}
+            </h2>
+            <ImageEditor episodeId={episode.id} layout={l} initial={imagesFor(l)} publicBase={publicBase} />
+          </section>
+        ))}
 
       <form action={remove} className="pt-4 border-t border-hair">
         <ConfirmButton message={d.studio.confirmDelete} className="t-link t-caption text-ink">

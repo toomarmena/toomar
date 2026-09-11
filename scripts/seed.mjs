@@ -8,6 +8,7 @@
  *                        creator_email, creator_name, creator_handle, creator_avatar, creator_socials
  *   cover.jpg|png|webp   portrait cover
  *   ar/01/*.jpg          comic: one folder per episode per language, images in reading order
+ *   ar/01/horizontal/*.jpg  optional: the same episode drawn as horizontal pages
  *   ar/01.txt            novel: one text file per chapter; first line is the title
  *
  * Reads keys from .env.local. Idempotent: episodes that already have content are skipped.
@@ -64,6 +65,9 @@ if (!meta.creator_email) fail("series.json needs creator_email");
 const runStatus = ["ongoing", "completed", "hiatus"].includes(meta.run_status) ? meta.run_status : "ongoing";
 const ageRating = ["all", "13", "16"].includes(String(meta.age_rating)) ? String(meta.age_rating) : "all";
 const SOCIAL_KEYS = ["instagram", "x", "facebook", "youtube", "tiktok", "website"];
+const LAYOUT_KEYS = ["vertical", "horizontal"];
+const layouts = (meta.layouts || ["vertical"]).filter((l) => LAYOUT_KEYS.includes(l));
+if (layouts.length === 0) fail("layouts must include vertical, horizontal, or both");
 if (meta.creator_handle && !/^[a-z0-9]+(-[a-z0-9]+)*$/.test(meta.creator_handle)) fail("creator_handle: lowercase letters, digits and dashes only");
 
 // ---------- clients ----------
@@ -147,6 +151,7 @@ async function ensureSeries(creatorId) {
     languages,
     run_status: runStatus,
     age_rating: ageRating,
+    layouts,
   };
   const { data: existing } = await db.from("series").select("id, status, cover_key").eq("slug", slug).maybeSingle();
   let id = existing?.id;
@@ -177,9 +182,38 @@ async function ensureSeries(creatorId) {
 }
 
 // ---------- episodes ----------
-async function seedComicEpisode(seriesId, lang, folder, number, title) {
+/** Uploads one layout's images for an episode. Returns the bytes written. */
+async function seedImages(seriesId, episodeId, folder, layout) {
   const files = listFiles(folder, isImage);
-  if (files.length === 0) {
+  if (files.length === 0) return { count: 0, bytes: 0 };
+  const pages = layout === "horizontal";
+  const { count: existing } = await db.from("episode_images").select("id", { count: "exact", head: true }).eq("episode_id", episodeId).eq("layout", layout);
+  if (existing && !force) {
+    console.log(`  = ${layout}: already has ${existing} images, skipped`);
+    return { count: 0, bytes: 0 };
+  }
+  if (existing) await db.from("episode_images").delete().eq("episode_id", episodeId).eq("layout", layout);
+  let position = 0;
+  let total = 0;
+  for (const f of files) {
+    const img = sharp(join(folder, f)).rotate();
+    const m = await img.metadata();
+    // Strips are capped by width; single pages by their longest side.
+    const resize = pages ? (m.width >= m.height ? { width: Math.min(1600, m.width) } : { height: Math.min(1600, m.height) }) : { width: Math.min(1080, m.width || 1080) };
+    const buf = await img.resize({ ...resize, withoutEnlargement: true }).webp({ quality: 86 }).toBuffer();
+    const { width: w, height: h } = await sharp(buf).metadata();
+    const key = `series/${seriesId}/ep/${episodeId}/${layout}/${crypto.randomUUID()}.webp`;
+    await put(key, buf, "image/webp");
+    const { error } = await db.from("episode_images").insert({ episode_id: episodeId, position: ++position, key, width: w, height: h, bytes: buf.length, layout });
+    if (error) throw error;
+    total += buf.length;
+  }
+  return { count: files.length, bytes: total };
+}
+
+async function seedComicEpisode(seriesId, lang, folder, number, title) {
+  const hasPages = existsSync(join(folder, "horizontal"));
+  if (listFiles(folder, isImage).length === 0 && !hasPages) {
     console.log(`  - ${lang}/${basename(folder)}: no images, skipped`);
     return;
   }
@@ -191,26 +225,12 @@ async function seedComicEpisode(seriesId, lang, folder, number, title) {
   } else if (title) {
     await db.from("episodes").update({ title }).eq("id", ep.id);
   }
-  const { count } = await db.from("episode_images").select("id", { count: "exact", head: true }).eq("episode_id", ep.id);
-  if (count && !force) {
-    console.log(`  = ${lang}/${number}: already has ${count} images, skipped`);
-  } else {
-    if (count) await db.from("episode_images").delete().eq("episode_id", ep.id);
-    let position = 0;
-    let total = 0;
-    for (const f of files) {
-      const img = sharp(join(folder, f)).rotate();
-      const m = await img.metadata();
-      const width = Math.min(1080, m.width || 1080);
-      const buf = await img.resize({ width, withoutEnlargement: true }).webp({ quality: 86 }).toBuffer();
-      const { width: w, height: h } = await sharp(buf).metadata();
-      const key = `series/${seriesId}/ep/${ep.id}/${crypto.randomUUID()}.webp`;
-      await put(key, buf, "image/webp");
-      const { error } = await db.from("episode_images").insert({ episode_id: ep.id, position: ++position, key, width: w, height: h, bytes: buf.length });
-      if (error) throw error;
-      total += buf.length;
-    }
-    console.log(`  + ${lang}/${number}: ${files.length} images, ${Math.round(total / 1024)} KB`);
+  const strip = await seedImages(seriesId, ep.id, folder, "vertical");
+  const pages = hasPages ? await seedImages(seriesId, ep.id, join(folder, "horizontal"), "horizontal") : { count: 0, bytes: 0 };
+  const written = strip.count + pages.count;
+  if (written > 0) {
+    const parts = [strip.count ? `${strip.count} رأسية` : null, pages.count ? `${pages.count} أفقية` : null].filter(Boolean).join(" + ");
+    console.log(`  + ${lang}/${number}: ${parts}, ${Math.round((strip.bytes + pages.bytes) / 1024)} KB`);
   }
   await db.from("episodes").update({ is_published: true }).eq("id", ep.id);
 }

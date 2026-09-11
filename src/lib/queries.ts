@@ -2,7 +2,7 @@ import "server-only";
 import { createClient } from "./supabase/server";
 import { mediaUrl } from "./media";
 import type { Lang } from "./i18n";
-import type { CreatorCard, CreatorProfile, EpisodeImage, EpisodeListItem, EpisodeRow, EpisodeStats, SeriesCardRow, SeriesDetail, SeriesSummary } from "./types";
+import type { CreatorCard, CreatorProfile, EpisodeImage, EpisodeImages, EpisodeListItem, EpisodeRow, EpisodeStats, SeriesCardRow, SeriesDetail, SeriesSummary } from "./types";
 import { SOCIAL_KEYS, type SeriesKind, type SocialLinks } from "./constants";
 
 const TINTS = ["#2B5CF6", "#6B4DE6", "#FFB800", "#FF7A59", "#1E44C2", "#111111"];
@@ -206,15 +206,21 @@ export function nextPublishInstant(publishDay: number, now = Date.now()) {
   return new Date(guess - (inCairo - inUtc));
 }
 
-export async function listEpisodeImages(episodeId: string): Promise<EpisodeImage[]> {
+/** Both sets in one query: the vertical strip and the horizontal pages. */
+export async function listEpisodeImages(episodeId: string): Promise<EpisodeImages> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("episode_images")
-    .select("id, key, width, height")
+    .select("id, key, width, height, layout")
     .eq("episode_id", episodeId)
     .order("position", { ascending: true });
   if (error) throw error;
-  return (data ?? []).map((i) => ({ id: i.id, url: mediaUrl(i.key)!, width: i.width, height: i.height }));
+  const out: EpisodeImages = { vertical: [], horizontal: [] };
+  for (const i of data ?? []) {
+    const img: EpisodeImage = { id: i.id, url: mediaUrl(i.key)!, width: i.width, height: i.height };
+    out[i.layout === "horizontal" ? "horizontal" : "vertical"].push(img);
+  }
+  return out;
 }
 
 /** Published neighbours of an episode, for the reader's navigation. */

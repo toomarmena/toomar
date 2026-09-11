@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { AGE_RATING, GENRES, RUN_STATUS, SOCIAL_KEYS, type AgeRating, type GenreKey, type RunStatus, type SocialLinks } from "@/lib/constants";
+import { AGE_RATING, GENRES, LAYOUTS, RUN_STATUS, SOCIAL_KEYS, isLayout, type AgeRating, type ComicLayout, type GenreKey, type RunStatus, type SocialLinks } from "@/lib/constants";
 import { isLang, type Lang } from "@/lib/i18n";
 import { deleteObject, deleteObjects, presignUpload } from "@/lib/r2";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -63,7 +63,9 @@ function readSeriesForm(form: FormData) {
   const run_status: RunStatus = RUN_STATUS.some((r) => r.key === rs) ? (rs as RunStatus) : "ongoing";
   const ar = String(form.get("age_rating") ?? "all");
   const age_rating: AgeRating = AGE_RATING.some((r) => r.key === ar) ? (ar as AgeRating) : "all";
-  return { kind, title_ar, title_en, description_ar, description_en, genre, publish_day, languages: languages.length ? languages : (["ar"] as Lang[]), run_status, age_rating };
+  const picked = form.getAll("layouts").filter(isLayout) as ComicLayout[];
+  const layouts = picked.length ? LAYOUTS.filter((l) => picked.includes(l.key)).map((l) => l.key) : (["vertical"] as ComicLayout[]);
+  return { kind, title_ar, title_en, description_ar, description_en, genre, publish_day, languages: languages.length ? languages : (["ar"] as Lang[]), run_status, age_rating, layouts };
 }
 
 // ---------- public profile ----------
@@ -276,21 +278,24 @@ export async function deleteEpisode(id: string) {
   redirect(`/studio/${series.id}`);
 }
 
-export async function presignImage(episodeId: string, contentType: string) {
+export async function presignImage(episodeId: string, contentType: string, layout: ComicLayout = "vertical") {
   const { series } = await ownEpisode(episodeId);
   if (!IMAGE_TYPES.has(contentType)) throw new Error("type");
+  if (!isLayout(layout)) throw new Error("layout");
   const ext = contentType === "image/png" ? "png" : contentType === "image/jpeg" ? "jpg" : "webp";
-  return presignUpload(`series/${series.id}/ep/${episodeId}/${crypto.randomUUID()}.${ext}`, contentType);
+  return presignUpload(`series/${series.id}/ep/${episodeId}/${layout}/${crypto.randomUUID()}.${ext}`, contentType);
 }
 
-export async function addImage(episodeId: string, key: string, width: number, height: number, bytes: number) {
+export async function addImage(episodeId: string, key: string, width: number, height: number, bytes: number, layout: ComicLayout = "vertical") {
   const { supabase, series } = await ownEpisode(episodeId);
   if (!key.startsWith(`series/${series.id}/ep/${episodeId}/`)) throw new Error("key");
-  const { data: last } = await supabase.from("episode_images").select("position").eq("episode_id", episodeId).order("position", { ascending: false }).limit(1).maybeSingle();
+  if (!isLayout(layout)) throw new Error("layout");
+  // Positions count from one within each layout.
+  const { data: last } = await supabase.from("episode_images").select("position").eq("episode_id", episodeId).eq("layout", layout).order("position", { ascending: false }).limit(1).maybeSingle();
   const position = (last?.position ?? 0) + 1;
   const { data, error } = await supabase
     .from("episode_images")
-    .insert({ episode_id: episodeId, key, width: Math.round(width), height: Math.round(height), bytes: Math.round(bytes), position })
+    .insert({ episode_id: episodeId, key, width: Math.round(width), height: Math.round(height), bytes: Math.round(bytes), position, layout })
     .select("id")
     .single();
   if (error) throw error;
